@@ -1,0 +1,55 @@
+# n8n-Sandbox: eigene, abgeschottete Instanz, in der Claude alles ausprobieren darf.
+# Start:   docker compose up -d        Oberfläche: http://localhost:5679   Mails: http://localhost:8025
+# Neu:     docker compose down -v      löscht alles, danach frisch starten
+name: n8n-sandbox
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5679:5678"          # nur auf diesem Rechner erreichbar
+    environment:
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?Bitte N8N_ENCRYPTION_KEY in .env setzen}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5679/}
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE:-false}
+      - GENERIC_TIMEZONE=Europe/Berlin
+      - TZ=Europe/Berlin
+      # Leitplanken: riskante Knoten gesperrt (die Standardsperren von n8n 2.x bleiben enthalten)
+      - 'NODES_EXCLUDE=["n8n-nodes-base.executeCommand","n8n-nodes-base.localFileTrigger","n8n-nodes-base.readWriteFile","n8n-nodes-base.ssh","n8n-nodes-base.ftp"]'
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=true
+      # Kein Zugriff auf das eigene Netz: private Adressen, localhost und Cloud-Metadaten gesperrt
+      - N8N_SSRF_PROTECTION_ENABLED=true
+      - N8N_SSRF_ALLOWED_HOSTNAMES=mailpit,gotenberg,qr-dienst   # die Dienste der Sandbox darf n8n ansprechen
+      - N8N_PUBLIC_API_DISABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+    volumes:
+      - sandbox_daten:/home/node/.n8n
+    networks: [sandbox]
+    mem_limit: 2g
+    cpus: 2
+  mailpit:
+    image: axllent/mailpit:latest       # fängt alle Mails ab, nichts geht wirklich raus
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks: [sandbox]
+  gotenberg:
+    image: gotenberg/gotenberg:8            # HTML nach PDF über ein eingebautes Chromium; kein Port nach außen, nur aus dem Sandbox-Netz erreichbar
+    restart: unless-stopped
+    command: ["gotenberg", "--api-timeout=60s", "--log-level=warn"]
+    networks: [sandbox]
+    mem_limit: 1g
+  qr-dienst:
+    build: ./qr-dienst                      # eigener Mini-Dienst: GET /qr.png?text=... liefert einen QR-Code als PNG
+    restart: unless-stopped
+    networks: [sandbox]
+    mem_limit: 256m
+volumes:
+  sandbox_daten:
+networks:
+  sandbox:

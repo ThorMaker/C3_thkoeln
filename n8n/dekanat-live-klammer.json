@@ -1,0 +1,1541 @@
+{
+  "name": "Dekanat: Termine per Sprache (Live-Klammer)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Dekanat: Termine per Sprache\n**User Story:** Das Dekanat legt Termine per Sprachnachricht an, sammelt Rückmeldungen per Formular und bekommt freitags eine geprüfte Zusammenfassung. Durchgehender Fall aus dem Vortrag (Skript, Kapitel 4).\n\n1. **Termin anlegen** per Sprachnachricht oder Text\n2. **Rückmeldungen** per Formular (QR-Code)\n3. **Zusammenfassung** freitags oder auf Knopfdruck, mit **Prüfschleife**\n\nEinrichtung: `n8n/README.md` (Data Tables, Credentials, Konfiguration).",
+        "height": 260,
+        "width": 660,
+        "color": 7
+      },
+      "id": "95e18cc8-3aad-5346-8f50-4902a2f0241a",
+      "name": "Notiz Überblick",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -760
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Technik und Konfiguration\nIm Knoten **Konfiguration** stehen Modell, Mailadressen und der Kalender. Die Zugangsdaten und die Basis-Adresse der KI liegen in der Zugangsdatei des OpenAI-Knotens, nicht in dieser Datei. Drei Formulare und ein Zeitplan lösen aus, Data Tables `termine` und `rueckmeldungen` speichern, ein OpenAI-kompatibles Modell extrahiert und fasst zusammen.\n\nModellwechsel Claude oder THKI/KI:connect: drei Felder ändern und im Knoten **KI: ...** die passende Credential wählen.",
+        "height": 260,
+        "width": 460,
+        "color": 6
+      },
+      "id": "3ea884f0-2fe3-5d19-bcac-4784f0e9b34d",
+      "name": "Notiz Konfiguration",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -760
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Prüfschleife (Regelkreis)\nJede Rückmeldung muss mit ihrer ID in der Zusammenfassung stehen. **Prüfen** vergleicht deterministisch; fehlt etwas, geht es mit Hinweis zurück zu **Prompt bauen**, höchstens drei Versuche, dann prüft ein Mensch.",
+        "height": 200,
+        "width": 720,
+        "color": 4
+      },
+      "id": "a8aa9927-1c3c-5979-8fb3-0ccf9e71b8c0",
+      "name": "Notiz Prüfschleife",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "formTitle": "C3: Termin anlegen",
+        "formDescription": "TH Köln · Claude Code, Automatisierung, Wissen<br>Sprachnachricht hochladen oder den Termin als Text eintragen.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Sprachnachricht",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".m4a, .mp3, .wav, .webm, .ogg, .mp4"
+            },
+            {
+              "fieldLabel": "Oder als Text",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "path": "c3-termin",
+          "buttonLabel": "Termin anlegen",
+          "customCss": "\n/* TH-Koeln-Auftritt fuer die oeffentlichen Formulare.\n   Gestaltung laeuft vollstaendig ueber CSS: Der Form Trigger filtert eigenes HTML,\n   das CSS-Feld nicht. Das Logo steckt als Data-URI in einer Hintergrundregel. */\n:root {\n  --font-family: 'Source Sans 3', 'Source Sans Pro', -apple-system, 'Segoe UI', Roboto, sans-serif;\n  --color-primary: #C81E0F;\n  --color-primary-shade-1: #A81809;\n  --color-secondary: #C81E0F;\n  --color-submit-btn-bg: #C81E0F;\n  --color-submit-btn-text: #FFFFFF;\n  --color-button-primary-font: #FFFFFF;\n  --color-header-label: #000000;\n  --color-background: #FFFFFF;\n  --color-card-bg: #FFFFFF;\n  --color-input-border: #C8C8C8;\n  --border-radius-card: 0px;\n  --border-radius-input: 0px;\n}\n\n/* Heller Grund statt n8n-Grau, damit die Karte traegt */\nbody { background: #FFFFFF !important; }\n\n/* Die Karte: Dreiklang-Streifen oben, Logo rechts, klare Kante statt Schatten */\n.card, .form-container, [class*=\"formContainer\"] {\n  border: 1px solid #E4E4E4 !important;\n  border-radius: 0 !important;\n  box-shadow: none !important;\n  border-top: 5px solid #C81E0F !important;\n  padding-top: 84px !important;\n  position: relative !important;\n  background-image: url(\"data:image/png;base64,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\") !important;\n  background-repeat: no-repeat !important;\n  background-position: right 24px top 22px !important;\n  background-size: 92px auto !important;\n}\n\n/* Der Dreiklang als schmaler Streifen unter der roten Kante */\n.card::before, .form-container::before {\n  content: \"\";\n  position: absolute; top: 0; left: 0; right: 0; height: 5px;\n  /* Nur die drei Bereichsfarben: Technology, Arts, Sciences.\n     Schwarz ist die Schriftfarbe der Wortmarke und gehoert nicht in den Streifen. */\n  background: linear-gradient(to right,\n    #C81E0F 0 33.34%, #EA5A00 33.34% 66.67%, #B43092 66.67% 100%);\n}\n\n/* Ueberschrift und Beschreibung */\nh1 { letter-spacing: -0.01em !important; font-weight: 700 !important; color: #000 !important; }\nh2, .description, [class*=\"description\"] { color: #595959 !important; }\n\n/* Beschriftungen: klein, gesperrt, wie die Kicker auf den Folien */\nlabel, .form-label, [class*=\"label\"] {\n  font-weight: 600 !important;\n  color: #000000 !important;\n}\n\n/* Eingabefelder: eckig, ruhig, roter Fokus */\ninput[type=\"text\"], input[type=\"email\"], input[type=\"number\"], textarea, select,\n.el-input__inner, .el-textarea__inner {\n  border-radius: 0 !important;\n  border-color: #C8C8C8 !important;\n}\ninput:focus, textarea:focus, select:focus,\n.el-input__inner:focus, .el-textarea__inner:focus {\n  border-color: #C81E0F !important;\n  box-shadow: 0 0 0 2px rgba(200, 30, 15, 0.15) !important;\n  /* Ohne diese Zeile bleibt der Fokusring des Browsers sichtbar, in Chrome orange. */\n  outline: 2px solid #C81E0F !important;\n  outline-offset: 0 !important;\n}\n\n/* Absendeknopf. n8n benennt die Variablen je nach Fassung anders,\n   deshalb hier die Selektoren direkt, das faengt alle Faelle ab. */\nbutton[type=\"submit\"], .btn--primary, .submit-button, input[type=\"submit\"] {\n  background-color: #C81E0F !important;\n  border-color: #C81E0F !important;\n  color: #FFFFFF !important;\n  border-radius: 0 !important;\n  font-weight: 600 !important;\n  letter-spacing: 0.01em !important;\n}\nbutton[type=\"submit\"]:hover, .btn--primary:hover, .submit-button:hover {\n  background-color: #A81809 !important;\n  border-color: #A81809 !important;\n}\n\n/* Pflichtfeld-Stern in Rot statt n8n-Orange */\n.required, [class*=\"required\"] { color: #C81E0F !important; }\n\n/* Auf dem Telefon bleibt rechts Platz fuer das Logo */\n@media (max-width: 520px) {\n  .card, .form-container { background-size: 74px auto !important; padding-top: 72px !important; }\n}\n",
+          "ignoreBots": true,
+          "useWorkflowTimezone": true,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "text",
+              "formSubmittedText": "Danke. Der Termin wird gerade verarbeitet und landet gleich im Kalender."
+            }
+          }
+        }
+      },
+      "id": "4ea6ca67-fc7e-5678-a175-9ae617a66a8e",
+      "name": "Formular: Termin anlegen",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        -400
+      ],
+      "webhookId": "8f3f8b1e-e912-5958-931d-49657b43c982"
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "formTitle": "C3: Ihre Rückmeldung",
+        "formDescription": "TH Köln · Claude Code, Automatisierung, Wissen<br>Fünf Klicks und ein paar Stichworte. Anonym, der Name ist freiwillig.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Wie weit sind Sie mit Claude?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Noch gar nicht benutzt"
+                  },
+                  {
+                    "option": "Ein paar Mal ausprobiert"
+                  },
+                  {
+                    "option": "Nutze es regelmäßig"
+                  },
+                  {
+                    "option": "Baue schon eigene Sachen damit"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Aus welchem Bereich kommen Sie?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Lehre"
+                  },
+                  {
+                    "option": "Verwaltung und Dekanat"
+                  },
+                  {
+                    "option": "Studierendenservice"
+                  },
+                  {
+                    "option": "Leitung"
+                  },
+                  {
+                    "option": "Forschung"
+                  },
+                  {
+                    "option": "Sonstiges"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Welche Aufgaben wiederholen sich bei Ihnen? Gern mehrere, eine pro Zeile.",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Rückmeldungen zu Hausarbeiten schreiben\nProtokolle aus Stichpunkten\nAnkündigungen für die Lernplattform"
+            },
+            {
+              "fieldLabel": "Welches Thema interessiert Sie am meisten?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Grundlagen und Datenschutz: was darf ich hineingeben?"
+                  },
+                  {
+                    "option": "Claude auf meine Arbeit einstellen"
+                  },
+                  {
+                    "option": "Eigene Skills bauen"
+                  },
+                  {
+                    "option": "Abläufe, die ohne mich weiterlaufen"
+                  },
+                  {
+                    "option": "Viele Dokumente durchsuchbar machen"
+                  },
+                  {
+                    "option": "Im Team zusammenarbeiten"
+                  },
+                  {
+                    "option": "Werkstatt an meinem eigenen Fall"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Was hält Sie bisher davon ab?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Weiß nicht, wo ich anfangen soll"
+                  },
+                  {
+                    "option": "Unsicher beim Datenschutz"
+                  },
+                  {
+                    "option": "Keine Zeit zum Einarbeiten"
+                  },
+                  {
+                    "option": "Zweifel, ob das Ergebnis taugt"
+                  },
+                  {
+                    "option": "Unklar, ob ich das darf"
+                  },
+                  {
+                    "option": "Nichts, ich bin schon dabei"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Wie soll es weitergehen?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Heute hat mir gereicht"
+                  },
+                  {
+                    "option": "Ein weiterer Termin"
+                  },
+                  {
+                    "option": "Zwei bis drei Blöcke"
+                  },
+                  {
+                    "option": "Regelmäßig, als Reihe"
+                  },
+                  {
+                    "option": "Weiß ich noch nicht"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Noch etwas? (optional)",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Name (optional)"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "path": "c3-rueckmeldung",
+          "buttonLabel": "Rückmeldung senden",
+          "customCss": "\n/* TH-Koeln-Auftritt fuer die oeffentlichen Formulare.\n   Gestaltung laeuft vollstaendig ueber CSS: Der Form Trigger filtert eigenes HTML,\n   das CSS-Feld nicht. Das Logo steckt als Data-URI in einer Hintergrundregel. */\n:root {\n  --font-family: 'Source Sans 3', 'Source Sans Pro', -apple-system, 'Segoe UI', Roboto, sans-serif;\n  --color-primary: #C81E0F;\n  --color-primary-shade-1: #A81809;\n  --color-secondary: #C81E0F;\n  --color-submit-btn-bg: #C81E0F;\n  --color-submit-btn-text: #FFFFFF;\n  --color-button-primary-font: #FFFFFF;\n  --color-header-label: #000000;\n  --color-background: #FFFFFF;\n  --color-card-bg: #FFFFFF;\n  --color-input-border: #C8C8C8;\n  --border-radius-card: 0px;\n  --border-radius-input: 0px;\n}\n\n/* Heller Grund statt n8n-Grau, damit die Karte traegt */\nbody { background: #FFFFFF !important; }\n\n/* Die Karte: Dreiklang-Streifen oben, Logo rechts, klare Kante statt Schatten */\n.card, .form-container, [class*=\"formContainer\"] {\n  border: 1px solid #E4E4E4 !important;\n  border-radius: 0 !important;\n  box-shadow: none !important;\n  border-top: 5px solid #C81E0F !important;\n  padding-top: 84px !important;\n  position: relative !important;\n  background-image: url(\"data:image/png;base64,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\") !important;\n  background-repeat: no-repeat !important;\n  background-position: right 24px top 22px !important;\n  background-size: 92px auto !important;\n}\n\n/* Der Dreiklang als schmaler Streifen unter der roten Kante */\n.card::before, .form-container::before {\n  content: \"\";\n  position: absolute; top: 0; left: 0; right: 0; height: 5px;\n  /* Nur die drei Bereichsfarben: Technology, Arts, Sciences.\n     Schwarz ist die Schriftfarbe der Wortmarke und gehoert nicht in den Streifen. */\n  background: linear-gradient(to right,\n    #C81E0F 0 33.34%, #EA5A00 33.34% 66.67%, #B43092 66.67% 100%);\n}\n\n/* Ueberschrift und Beschreibung */\nh1 { letter-spacing: -0.01em !important; font-weight: 700 !important; color: #000 !important; }\nh2, .description, [class*=\"description\"] { color: #595959 !important; }\n\n/* Beschriftungen: klein, gesperrt, wie die Kicker auf den Folien */\nlabel, .form-label, [class*=\"label\"] {\n  font-weight: 600 !important;\n  color: #000000 !important;\n}\n\n/* Eingabefelder: eckig, ruhig, roter Fokus */\ninput[type=\"text\"], input[type=\"email\"], input[type=\"number\"], textarea, select,\n.el-input__inner, .el-textarea__inner {\n  border-radius: 0 !important;\n  border-color: #C8C8C8 !important;\n}\ninput:focus, textarea:focus, select:focus,\n.el-input__inner:focus, .el-textarea__inner:focus {\n  border-color: #C81E0F !important;\n  box-shadow: 0 0 0 2px rgba(200, 30, 15, 0.15) !important;\n  /* Ohne diese Zeile bleibt der Fokusring des Browsers sichtbar, in Chrome orange. */\n  outline: 2px solid #C81E0F !important;\n  outline-offset: 0 !important;\n}\n\n/* Absendeknopf. n8n benennt die Variablen je nach Fassung anders,\n   deshalb hier die Selektoren direkt, das faengt alle Faelle ab. */\nbutton[type=\"submit\"], .btn--primary, .submit-button, input[type=\"submit\"] {\n  background-color: #C81E0F !important;\n  border-color: #C81E0F !important;\n  color: #FFFFFF !important;\n  border-radius: 0 !important;\n  font-weight: 600 !important;\n  letter-spacing: 0.01em !important;\n}\nbutton[type=\"submit\"]:hover, .btn--primary:hover, .submit-button:hover {\n  background-color: #A81809 !important;\n  border-color: #A81809 !important;\n}\n\n/* Pflichtfeld-Stern in Rot statt n8n-Orange */\n.required, [class*=\"required\"] { color: #C81E0F !important; }\n\n/* Auf dem Telefon bleibt rechts Platz fuer das Logo */\n@media (max-width: 520px) {\n  .card, .form-container { background-size: 74px auto !important; padding-top: 72px !important; }\n}\n",
+          "ignoreBots": true,
+          "useWorkflowTimezone": true,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "text",
+              "formSubmittedText": "Danke. Ihre Rückmeldung ist angekommen und taucht am Ende des Vortrags in der Zusammenfassung auf."
+            }
+          }
+        }
+      },
+      "id": "3f5c6ac5-c271-5929-b128-3d03bbf68aa9",
+      "name": "Formular: Rückmeldung",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6cc8f4c6-0a22-54f9-bf01-bf0aac3a6c05"
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "formTitle": "C3: Zusammenfassung jetzt erstellen",
+        "formDescription": "TH Köln · Claude Code, Automatisierung, Wissen<br>Startet die Zusammenfassung für den zuletzt angelegten Termin.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Anlass (optional)"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "path": "c3-zusammenfassen",
+          "buttonLabel": "Zusammenfassung starten",
+          "customCss": "\n/* TH-Koeln-Auftritt fuer die oeffentlichen Formulare.\n   Gestaltung laeuft vollstaendig ueber CSS: Der Form Trigger filtert eigenes HTML,\n   das CSS-Feld nicht. Das Logo steckt als Data-URI in einer Hintergrundregel. */\n:root {\n  --font-family: 'Source Sans 3', 'Source Sans Pro', -apple-system, 'Segoe UI', Roboto, sans-serif;\n  --color-primary: #C81E0F;\n  --color-primary-shade-1: #A81809;\n  --color-secondary: #C81E0F;\n  --color-submit-btn-bg: #C81E0F;\n  --color-submit-btn-text: #FFFFFF;\n  --color-button-primary-font: #FFFFFF;\n  --color-header-label: #000000;\n  --color-background: #FFFFFF;\n  --color-card-bg: #FFFFFF;\n  --color-input-border: #C8C8C8;\n  --border-radius-card: 0px;\n  --border-radius-input: 0px;\n}\n\n/* Heller Grund statt n8n-Grau, damit die Karte traegt */\nbody { background: #FFFFFF !important; }\n\n/* Die Karte: Dreiklang-Streifen oben, Logo rechts, klare Kante statt Schatten */\n.card, .form-container, [class*=\"formContainer\"] {\n  border: 1px solid #E4E4E4 !important;\n  border-radius: 0 !important;\n  box-shadow: none !important;\n  border-top: 5px solid #C81E0F !important;\n  padding-top: 84px !important;\n  position: relative !important;\n  background-image: url(\"data:image/png;base64,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\") !important;\n  background-repeat: no-repeat !important;\n  background-position: right 24px top 22px !important;\n  background-size: 92px auto !important;\n}\n\n/* Der Dreiklang als schmaler Streifen unter der roten Kante */\n.card::before, .form-container::before {\n  content: \"\";\n  position: absolute; top: 0; left: 0; right: 0; height: 5px;\n  /* Nur die drei Bereichsfarben: Technology, Arts, Sciences.\n     Schwarz ist die Schriftfarbe der Wortmarke und gehoert nicht in den Streifen. */\n  background: linear-gradient(to right,\n    #C81E0F 0 33.34%, #EA5A00 33.34% 66.67%, #B43092 66.67% 100%);\n}\n\n/* Ueberschrift und Beschreibung */\nh1 { letter-spacing: -0.01em !important; font-weight: 700 !important; color: #000 !important; }\nh2, .description, [class*=\"description\"] { color: #595959 !important; }\n\n/* Beschriftungen: klein, gesperrt, wie die Kicker auf den Folien */\nlabel, .form-label, [class*=\"label\"] {\n  font-weight: 600 !important;\n  color: #000000 !important;\n}\n\n/* Eingabefelder: eckig, ruhig, roter Fokus */\ninput[type=\"text\"], input[type=\"email\"], input[type=\"number\"], textarea, select,\n.el-input__inner, .el-textarea__inner {\n  border-radius: 0 !important;\n  border-color: #C8C8C8 !important;\n}\ninput:focus, textarea:focus, select:focus,\n.el-input__inner:focus, .el-textarea__inner:focus {\n  border-color: #C81E0F !important;\n  box-shadow: 0 0 0 2px rgba(200, 30, 15, 0.15) !important;\n  /* Ohne diese Zeile bleibt der Fokusring des Browsers sichtbar, in Chrome orange. */\n  outline: 2px solid #C81E0F !important;\n  outline-offset: 0 !important;\n}\n\n/* Absendeknopf. n8n benennt die Variablen je nach Fassung anders,\n   deshalb hier die Selektoren direkt, das faengt alle Faelle ab. */\nbutton[type=\"submit\"], .btn--primary, .submit-button, input[type=\"submit\"] {\n  background-color: #C81E0F !important;\n  border-color: #C81E0F !important;\n  color: #FFFFFF !important;\n  border-radius: 0 !important;\n  font-weight: 600 !important;\n  letter-spacing: 0.01em !important;\n}\nbutton[type=\"submit\"]:hover, .btn--primary:hover, .submit-button:hover {\n  background-color: #A81809 !important;\n  border-color: #A81809 !important;\n}\n\n/* Pflichtfeld-Stern in Rot statt n8n-Orange */\n.required, [class*=\"required\"] { color: #C81E0F !important; }\n\n/* Auf dem Telefon bleibt rechts Platz fuer das Logo */\n@media (max-width: 520px) {\n  .card, .form-container { background-size: 74px auto !important; padding-top: 72px !important; }\n}\n",
+          "ignoreBots": true,
+          "useWorkflowTimezone": true,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "text",
+              "formSubmittedText": "Läuft. Die Zusammenfassung geht per Mail raus, sobald die Prüfschleife zufrieden ist."
+            }
+          }
+        }
+      },
+      "id": "0ac334d6-05e1-5c92-85e3-701b154e1661",
+      "name": "Formular: Jetzt zusammenfassen",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        360
+      ],
+      "webhookId": "887a836b-2be2-57fc-8e07-069093be1667"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                5
+              ],
+              "triggerAtHour": 14
+            }
+          ]
+        }
+      },
+      "id": "2ef19385-d14d-5688-9519-9cfeb19ea1d8",
+      "name": "Zeitplan: Freitag 14 Uhr",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Modus setzen und die hochgeladene Audiodatei unter dem Namen \"audio\" bereitstellen\nreturn $input.all().map(item => {\n  const bin = item.binary || {};\n  const keys = Object.keys(bin);\n  const out = { json: { ...item.json, modus: 'termin', hat_audio: keys.length > 0 } };\n  if (keys.length) out.binary = { audio: bin[keys[0]] };\n  return out;\n});\n"
+      },
+      "id": "353194e8-430e-57dd-88bf-cc0f8e2ba951",
+      "name": "Modus: Termin",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({ json: { ...item.json, modus: 'rueckmeldung' } }));\n"
+      },
+      "id": "19f0fd1b-89c7-543c-923a-ff935e20651c",
+      "name": "Modus: Rückmeldung",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { modus: 'zusammenfassung' } }];\n"
+      },
+      "id": "c1dcc501-a96f-54c5-94de-cbe958de0f98",
+      "name": "Modus: Zusammenfassung",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ================= KONFIGURATION: hier anpassen =================\nconst cfg = {\n  // Modell für Textarbeit. Die Basis-Adresse steht NICHT hier, sondern in der\n  // Zugangsdatei des OpenAI-Knotens (\"Base URL\"). Anbieter wechseln heißt also:\n  // dort eine andere Adresse eintragen, z.B. https://chat.kiconnect.nrw/api/v1 für THKI,\n  // und hier den passenden Modellnamen. Der Ablauf selbst bleibt unverändert.\n  llm_model: 'gpt-4.1',\n  // Mail über Gmail: Absender ist das im Gmail-Knoten verbundene Konto.\n  // Hier steht nur, wie der Absender im Postfach heißen soll, und wer die Mail bekommt.\n  absender_name: 'C3, Claude Code Club',\n  empfaenger: 'dekanat@example.org',\n  pruefer: 'dekanat@example.org',\n  // Google Kalender: 'primary' ist der Hauptkalender des verbundenen Kontos.\n  // Zugangsdaten werden im Knoten selbst gewählt, sie stehen bewusst nicht in dieser Datei.\n  kalender_id: 'primary',\n  // Prüfschleife\n  max_versuche: 3,\n  max_worte: 250,\n};\nreturn $input.all().map(item => {\n  const out = { json: { ...item.json, cfg } };\n  if (item.binary) out.binary = item.binary;\n  return out;\n});\n"
+      },
+      "id": "ddc45180-11e0-5759-9277-56fa5474b9c5",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "52a516e5-5601-591f-84e7-5073a960bf8c",
+                    "leftValue": "={{ $json.modus }}",
+                    "rightValue": "termin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Termin"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8a573f78-9a63-55ca-a624-57e05f884b39",
+                    "leftValue": "={{ $json.modus }}",
+                    "rightValue": "rueckmeldung",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rückmeldung"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4992137d-840c-50d9-99ec-433be8a4e4c3",
+                    "leftValue": "={{ $json.modus }}",
+                    "rightValue": "zusammenfassung",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Zusammenfassung"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0b0fc93b-02ac-51db-86ad-cfb3f2c35f6e",
+      "name": "Weiche",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a7fe7cca-763b-514d-99ec-7be3ec3579e5",
+              "leftValue": "={{ $json.hat_audio }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2080e1db-b70e-599b-a747-823d3ec3cdcf",
+      "name": "Audio vorhanden?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "audio",
+        "options": {
+          "language": "de"
+        }
+      },
+      "id": "faf4a113-053d-521f-97ab-66fd0235d254",
+      "name": "Transkribieren",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1200,
+        -520
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const k = $('Konfiguration').first().json;\n// Der Transkriptionsknoten gibt das Ergebnis je nach Fassung unterschiedlich zurück.\n// Defensiv lesen, damit ein Versionswechsel den Vortrag nicht kippt.\nconst gesprochen = $json.text ?? $json.transcript ?? $json.data?.text ?? '';\nconst transkript = String(gesprochen || k['Oder als Text'] || '').trim();\nif (!transkript) throw new Error('Weder Sprachnachricht noch Text erhalten. Prüfen: Hat der Knoten Transkribieren ein Feld text geliefert? Sonst das Textfeld des Formulars nutzen.');\nreturn [{ json: { transkript } }];\n"
+      },
+      "id": "297b15bb-ed4f-58ce-b49f-16cca54963e8",
+      "name": "Transkript übernehmen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const heute = new Date().toISOString().slice(0, 10);\nconst system = `Du extrahierst Termindaten aus einer gesprochenen Nachricht eines Dekanats.\nAntworte ausschließlich mit einem JSON-Objekt ohne weiteren Text:\n{\"titel\": \"\", \"datum\": \"JJJJ-MM-TT\", \"uhrzeit\": \"HH:MM\", \"ort\": \"\", \"teilnehmerkreis\": \"\", \"rueckmeldung_bis\": \"JJJJ-MM-TT\", \"hinweise\": \"\"}\nRegeln:\n- Relative Angaben (\"nächsten Donnerstag\") rechnest du vom heutigen Datum ${heute} aus um.\n- Unbekannte Felder bleiben leere Zeichenketten. Erfinde nichts.\n- Keine Namen von Einzelpersonen in \"teilnehmerkreis\", nur Gruppen.`;\nreturn [{ json: { transkript: $json.transkript, system, user: $json.transkript } }];\n"
+      },
+      "id": "c75b976e-def7-52a0-b88c-bbc37226f04a",
+      "name": "Anfrage: Termin extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Konfiguration').first().json.cfg.llm_model }}"
+        },
+        "responses": {
+          "values": [
+            {
+              "type": "text",
+              "role": "system",
+              "content": "={{ $json.system }}"
+            },
+            {
+              "type": "text",
+              "role": "user",
+              "content": "={{ $json.user }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "maxTokens": 600,
+          "temperature": 0,
+          "store": false
+        }
+      },
+      "id": "dad2fe3d-4669-5231-bb4d-7d78ee39fda5",
+      "name": "KI: Termin extrahieren",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function kiText(j) {\n  if (typeof j === 'string') return j;\n  for (const k of ['content', 'text', 'output_text', 'message']) {\n    const v = j?.[k];\n    if (typeof v === 'string') return v;\n    if (v && typeof v === 'object' && typeof v.content === 'string') return v.content;\n  }\n  if (Array.isArray(j?.output)) {\n    const t = j.output.flatMap(o => (o.content || [])).map(c => c?.text).filter(Boolean).join('\\n');\n    if (t) return t;\n  }\n  return JSON.stringify(j);\n}\n\nconst antwort = kiText($json);\nconst roh = antwort.replace(/```json|```/g, '').trim();\nlet t;\ntry { t = JSON.parse(roh); } catch (e) { throw new Error('Die KI hat kein gültiges JSON geliefert: ' + roh.slice(0, 200)); }\nfor (const f of ['titel', 'datum', 'uhrzeit', 'ort', 'teilnehmerkreis', 'rueckmeldung_bis', 'hinweise']) t[f] = String(t[f] ?? '').trim();\nif (!t.titel) throw new Error('Kein Titel erkannt.');\nif (t.datum && !/^\\d{4}-\\d{2}-\\d{2}$/.test(t.datum)) throw new Error('Datum nicht im Format JJJJ-MM-TT: ' + t.datum);\nconst tag = (t.datum || new Date().toISOString().slice(0, 10)).replace(/-/g, '');\n// Für den Kalendereintrag: Beginn aus Datum und Uhrzeit, Ende eine Stunde später.\n// Bewusst ohne Zeitzonen-Kürzel: n8n legt die Zeitzone des Workflows zugrunde (Europe/Berlin).\nconst kal_datum = t.datum || new Date().toISOString().slice(0, 10);\nconst kal_zeit = /^\\d{2}:\\d{2}$/.test(t.uhrzeit) ? t.uhrzeit : '09:00';\nconst start_iso = kal_datum + 'T' + kal_zeit + ':00';\nconst end_iso = new Date(Date.parse(start_iso + 'Z') + 3600000).toISOString().slice(0, 19);\nconst termin_id = 'T-' + tag + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();\nreturn [{ json: {\n  termin_id, titel: t.titel, datum: t.datum, uhrzeit: t.uhrzeit, ort: t.ort,\n  teilnehmerkreis: t.teilnehmerkreis, rueckmeldung_bis: t.rueckmeldung_bis, hinweise: t.hinweise,\n  start_iso, end_iso,\n  transkript: $('Transkript übernehmen').first().json.transkript, erstellt_am: new Date().toISOString(),\n} }];\n"
+      },
+      "id": "7339e3a3-46fa-5723-ac84-01dede8a2c18",
+      "name": "Termin prüfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Die Data Table hat feste Spalten. Der Knoten übernimmt die Felder automatisch,\n// deshalb hier nur genau die Spalten weitergeben, die es in der Tabelle gibt.\n// start_iso und end_iso bleiben draußen, die liest der Kalender direkt aus 'Termin prüfen'.\nconst t = $('Termin prüfen').first().json;\nconst spalten = ['termin_id', 'titel', 'datum', 'uhrzeit', 'ort', 'teilnehmerkreis', 'rueckmeldung_bis', 'hinweise', 'transkript', 'erstellt_am'];\nconst zeile = {};\nfor (const s of spalten) zeile[s] = t[s] ?? '';\nreturn [{ json: zeile }];\n"
+      },
+      "id": "249212d0-8e98-5f43-90dd-7110471f8c34",
+      "name": "Für die Tabelle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "termine"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "ce050528-24c5-5a45-a3c7-a00c37d423d4",
+      "name": "Tabelle termine: einfügen",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appIHREBASEID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblIHRETERMINE",
+          "cachedResultName": "Termine"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "termin_id": "={{ $('Termin prüfen').first().json.termin_id }}",
+            "titel": "={{ $('Termin prüfen').first().json.titel }}",
+            "datum": "={{ $('Termin prüfen').first().json.datum || null }}",
+            "uhrzeit": "={{ $('Termin prüfen').first().json.uhrzeit }}",
+            "ort": "={{ $('Termin prüfen').first().json.ort }}",
+            "teilnehmerkreis": "={{ $('Termin prüfen').first().json.teilnehmerkreis }}",
+            "rueckmeldung_bis": "={{ $('Termin prüfen').first().json.rueckmeldung_bis || null }}",
+            "hinweise": "={{ $('Termin prüfen').first().json.hinweise }}",
+            "transkript": "={{ $('Termin prüfen').first().json.transkript }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "9dc445ed-5476-57fe-8844-ba427ce1b1c3",
+      "name": "Airtable: Termin",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        -400
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Konfiguration').first().json.cfg.kalender_id }}"
+        },
+        "start": "={{ $('Termin prüfen').first().json.start_iso }}",
+        "end": "={{ $('Termin prüfen').first().json.end_iso }}",
+        "useDefaultReminders": true,
+        "additionalFields": {
+          "summary": "={{ 'C3: ' + $('Termin prüfen').first().json.titel }}",
+          "location": "={{ $('Termin prüfen').first().json.ort }}",
+          "description": "={{ 'Angelegt aus einer Sprachnachricht.\\nTermin-ID: ' + $('Termin prüfen').first().json.termin_id + '\\nTeilnehmerkreis: ' + $('Termin prüfen').first().json.teilnehmerkreis + '\\nRückmeldung bis: ' + $('Termin prüfen').first().json.rueckmeldung_bis }}"
+        }
+      },
+      "id": "c4ce1b5c-df93-5381-9a1d-987b60924925",
+      "name": "Kalendereintrag anlegen",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        3120,
+        -400
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "termine"
+        },
+        "returnAll": true
+      },
+      "id": "f4f285ac-f354-59ff-9afd-ac74e064a820",
+      "name": "Tabelle termine lesen",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Auswahlwerte für Airtable: links steht, was im Formular steht, rechts der\n// Wert der Auswahlliste. Genau diese Schreibweise in Airtable anlegen, sonst\n// legt typecast bei jeder Abweichung eine neue Option an.\nconst KATEGORIE = {\n  'Noch gar nicht benutzt': 'Noch nicht',\n  'Ein paar Mal ausprobiert': 'Ausprobiert',\n  'Nutze es regelmäßig': 'Regelmäßig',\n  'Baue schon eigene Sachen damit': 'Baue selbst',\n  'Grundlagen und Datenschutz: was darf ich hineingeben?': 'Grundlagen und Datenschutz',\n  'Claude auf meine Arbeit einstellen': 'Claude einstellen',\n  'Eigene Skills bauen': 'Eigene Skills',\n  'Abläufe, die ohne mich weiterlaufen': 'Abläufe automatisieren',\n  'Viele Dokumente durchsuchbar machen': 'Dokumente durchsuchbar',\n  'Im Team zusammenarbeiten': 'Team-Zusammenarbeit',\n  'Werkstatt an meinem eigenen Fall': 'Eigener Fall',\n  'Lehre': 'Lehre',\n  'Verwaltung und Dekanat': 'Verwaltung',\n  'Studierendenservice': 'Service',\n  'Leitung': 'Leitung',\n  'Forschung': 'Forschung',\n  'Sonstiges': 'Sonstiges',\n  'Weiß nicht, wo ich anfangen soll': 'Kein Einstieg',\n  'Unsicher beim Datenschutz': 'Datenschutz unklar',\n  'Keine Zeit zum Einarbeiten': 'Keine Zeit',\n  'Zweifel, ob das Ergebnis taugt': 'Zweifel an Qualität',\n  'Unklar, ob ich das darf': 'Erlaubnis unklar',\n  'Nichts, ich bin schon dabei': 'Schon dabei',\n  'Heute hat mir gereicht': 'Hat gereicht',\n  'Ein weiterer Termin': 'Ein weiterer Termin',\n  'Zwei bis drei Blöcke': 'Zwei bis drei Blöcke',\n  'Regelmäßig, als Reihe': 'Regelmäßige Reihe',\n  'Weiß ich noch nicht': 'Noch unklar',\n};\n// Unbekanntes bleibt unverändert stehen: Dann sieht man in Airtable sofort,\n// dass ein Formularfeld geändert wurde, statt dass still falsch zugeordnet wird.\nconst kat = (wert) => KATEGORIE[String(wert || '').trim()] ?? String(wert || '').trim();\nconst k = $('Konfiguration').first().json;\nconst aufgaben = String(k['Welche Aufgaben wiederholen sich bei Ihnen? Gern mehrere, eine pro Zeile.'] || '')\n  .split(/\\r?\\n/).map(z => z.replace(/^[\\s\\-*\\u2022\\d.)]+/, '').trim()).filter(Boolean).slice(0, 5);\nconst termine = $('Tabelle termine lesen').all().map(i => i.json).filter(t => t.termin_id);\ntermine.sort((a, b) => String(b.erstellt_am).localeCompare(String(a.erstellt_am)));\nconst termin_id = termine.length ? termine[0].termin_id : 'ohne-termin';\nconst rueckmeldung_id = 'R-' + (Date.now().toString(36).slice(-3) + Math.random().toString(36).slice(2, 4)).toUpperCase();\n// Genau die Spalten der Tabelle 'rueckmeldungen', nichts darueber hinaus.\n// Wichtig: Die Aufgabenliste geht nur als Text hinaus (kommentar) und als Zahl\n// (anzahl_aufgaben). Data Tables und Airtable nehmen keine Listen an, ein Array\n// bricht den Knoten mit 'unexpected array input' ab.\nconst zeile = {\n  rueckmeldung_id, termin_id,\n  antwort: kat(k['Wie soll es weitergehen?'] || 'Weiß ich noch nicht'),\n  // Mehrere Aufgaben je Person: an Zeilenumbruechen trennen, Aufzaehlungszeichen\n  // abschneiden, leere Zeilen weg. Fuenf reichen, danach wird es eine Wunschliste.\n  kommentar: aufgaben.join('\\n'),\n  anzahl_aufgaben: aufgaben.length,\n  bereich: kat(k['Aus welchem Bereich kommen Sie?']),\n  hindernis: kat(k['Was hält Sie bisher davon ab?']),\n  erfahrung: kat(k['Wie weit sind Sie mit Claude?'] || 'Noch gar nicht benutzt'),\n  thema: kat(k['Welches Thema interessiert Sie am meisten?']),\n  sonstiges: String(k['Noch etwas? (optional)'] || '').trim(),\n  name: String(k['Name (optional)'] || '').trim() || 'anonym',\n  eingang: new Date().toISOString(),\n};\n// Sicherung fuer spaetere Aenderungen: kommt doch einmal eine Liste herein,\n// wird daraus Text, statt dass der Lauf mitten in der Vorfuehrung abbricht.\nfor (const [feld, wert] of Object.entries(zeile)) {\n  if (Array.isArray(wert)) zeile[feld] = wert.join('\\n');\n}\nreturn [{ json: zeile }];\n"
+      },
+      "id": "39da73ba-7d05-5c8b-af16-1e0d76b1cdc0",
+      "name": "Rückmeldung aufbereiten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rueckmeldungen"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "336e5029-555a-5241-b5e3-93f3bd12572e",
+      "name": "Tabelle rückmeldungen: einfügen",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appIHREBASEID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblIHRERUECKMELDUNGEN",
+          "cachedResultName": "Rückmeldungen"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "rueckmeldung_id": "={{ $('Rückmeldung aufbereiten').first().json.rueckmeldung_id }}",
+            "Termin": "={{ [$('Rückmeldung aufbereiten').first().json.termin_id] }}",
+            "antwort": "={{ $('Rückmeldung aufbereiten').first().json.antwort }}",
+            "kommentar": "={{ $('Rückmeldung aufbereiten').first().json.kommentar }}",
+            "erfahrung": "={{ $('Rückmeldung aufbereiten').first().json.erfahrung }}",
+            "bereich": "={{ $('Rückmeldung aufbereiten').first().json.bereich }}",
+            "hindernis": "={{ $('Rückmeldung aufbereiten').first().json.hindernis }}",
+            "anzahl_aufgaben": "={{ $('Rückmeldung aufbereiten').first().json.anzahl_aufgaben }}",
+            "thema": "={{ $('Rückmeldung aufbereiten').first().json.thema }}",
+            "sonstiges": "={{ $('Rückmeldung aufbereiten').first().json.sonstiges }}",
+            "name": "={{ $('Rückmeldung aufbereiten').first().json.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "b5e95024-3a1a-5407-b4d3-dd22178fde31",
+      "name": "Airtable: Rückmeldung",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Eine Zeile je genannter Aufgabe. Der Rückmeldungs-Datensatz behält die Aufgaben\n// als Text (Feld kommentar); hier entsteht zusätzlich der Ideenspeicher, in dem\n// sich einzelne Aufgaben filtern, gruppieren und zählen lassen.\n// Läuft der Zweig ohne Aufgaben, kommt kein Datensatz heraus und der Lauf endet still.\nconst r = $('Rückmeldung aufbereiten').first().json;\nconst aufgaben = String(r.kommentar || '').split(/\\r?\\n/).map(z => z.trim()).filter(Boolean);\nreturn aufgaben.map((aufgabe, i) => ({ json: {\n  idee_id: r.rueckmeldung_id + '-' + (i + 1),\n  rueckmeldung_id: r.rueckmeldung_id,\n  termin_id: r.termin_id,\n  aufgabe,\n  bereich: r.bereich,\n  erfahrung: r.erfahrung,\n  thema: r.thema,\n  eingang: r.eingang,\n} }));\n"
+      },
+      "id": "c3a916d6-eec2-5236-8745-7695988026d6",
+      "name": "Aufgaben einzeln",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appIHREBASEID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblIHREIDEEN",
+          "cachedResultName": "Ideen"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idee_id": "={{ $json.idee_id }}",
+            "aufgabe": "={{ $json.aufgabe }}",
+            "Rückmeldung": "={{ [$json.rueckmeldung_id] }}",
+            "bereich": "={{ $json.bereich }}",
+            "erfahrung": "={{ $json.erfahrung }}",
+            "thema": "={{ $json.thema }}",
+            "eingang": "={{ $json.eingang }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "30af667c-84f4-5d94-aa80-ea77080cd331",
+      "name": "Airtable: Ideen",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "termine"
+        },
+        "returnAll": true
+      },
+      "id": "b863b7a4-ded2-541b-a3f1-f3640e17f494",
+      "name": "Tabelle termine lesen (Z)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        560
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "rueckmeldungen"
+        },
+        "returnAll": true
+      },
+      "id": "d4ea0dc2-7aea-5ed3-848a-182b1a980f93",
+      "name": "Tabelle rückmeldungen lesen",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        560
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Konfiguration').first().json.cfg;\n\nconst termine = $('Tabelle termine lesen (Z)').all().map(i => i.json).filter(t => t.termin_id);\ntermine.sort((a, b) => String(b.erstellt_am).localeCompare(String(a.erstellt_am)));\nconst termin = termine[0] || { termin_id: 'ohne-termin', titel: 'ohne Termin', datum: '' };\nconst rows = $('Tabelle rückmeldungen lesen').all().map(i => i.json)\n  .filter(r => r.rueckmeldung_id && r.termin_id === termin.termin_id);\n\nconst versuch = $runIndex + 1;            // jeder Durchlauf der Schleife erhöht den Zähler\nconst vorher = versuch > 1 ? $json : null; // beim Wiederholen: Ergebnis der Prüfung\nconst zeilen = rows.map(r => {\n  const aufgaben = String(r.kommentar || '').split(/\\r?\\n/).filter(Boolean);\n  const kopf = `[${r.rueckmeldung_id}] ${r.bereich || 'Bereich offen'} | Erfahrung: ${r.erfahrung || 'unbekannt'} | Hürde: ${r.hindernis || 'keine'} | Thema: ${r.thema || 'ohne'} | Weiter: ${r.antwort}`;\n  const punkte = aufgaben.map(a => `    - ${a}`).join('\\n');\n  return kopf + (punkte ? '\\n' + punkte : '') + (r.sonstiges ? `\\n    (dazu: ${r.sonstiges})` : '');\n});\nconst liste = zeilen.join('\\n') || '(keine Rückmeldungen)';\nconst alle_aufgaben = rows.flatMap(r => String(r.kommentar || '').split(/\\r?\\n/).filter(Boolean).map(a => `${a} [${r.rueckmeldung_id}]`));\nconst system = `Du wertest die Bedarfsabfrage eines Weiterbildungstermins aus. Ziel ist eine Tagesordnung für das nächste Mal, keine Lobhudelei.\nPflicht: Jede Rückmeldung wird mindestens einmal mit ihrer ID in eckigen Klammern belegt, z.B. [R-7K2QF]. Erfinde keine IDs.\nAufbau als HTML ohne <html>-Rahmen:\n<h3>Wer im Raum war</h3> Verteilung der Erfahrungsstände in einem Satz.\n<h3>Alle genannten Aufgaben</h3> Eine schlichte Liste, eine Aufgabe je Punkt, im Wortlaut der Nennung, jede mit ihrer ID. Nichts weglassen, nichts zusammenfassen. Das ist der Ideenspeicher.\n<h3>Was sich wiederholt</h3> Dieselben Aufgaben jetzt zu Gruppen zusammengefasst, die größte Gruppe zuerst, jede mit IDs belegt. Hier wird verdichtet.\n<h3>Wer sitzt im Raum</h3> Verteilung nach Bereich, und was die häufigste Hürde ist.\n<h3>Gewünschte Themen</h3> Nach Häufigkeit sortiert, mit Anzahl.\n<h3>Wie es weitergehen soll</h3> Verteilung der Antworten, und daraus eine Empfehlung in einem Satz.\nSachlich, höchstens \\${cfg.max_worte} Wörter, keine Wertungen über Personen, keine Namen. Wenn eine Angabe fehlt, sag das, statt sie zu ergänzen.`;\nlet user = `Termin: ${termin.titel}${termin.datum ? ' (' + termin.datum + ')' : ''}\nRückmeldungen (je Person eine Kopfzeile, darunter die genannten Aufgaben):\n${liste}\n\nAlle Aufgaben als flache Liste, ${alle_aufgaben.length} Stück:\n${alle_aufgaben.map(a => '- ' + a).join('\\n') || '(keine)'}`;\nif (vorher) user += `\\n\\nKorrektur, Versuch ${versuch}: Im letzten Entwurf fehlten diese IDs: ${vorher.fehlend.join(', ') || 'keine'}. Erfunden waren: ${vorher.erfunden.join(', ') || 'keine'}. Schreibe die Zusammenfassung vollständig neu.`;\nreturn [{ json: { versuch, anzahl: rows.length, system, user } }];\n"
+      },
+      "id": "4d0e093e-beba-561a-b519-17c0a76f3422",
+      "name": "Prompt bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Konfiguration').first().json.cfg.llm_model }}"
+        },
+        "responses": {
+          "values": [
+            {
+              "type": "text",
+              "role": "system",
+              "content": "={{ $json.system }}"
+            },
+            {
+              "type": "text",
+              "role": "user",
+              "content": "={{ $json.user }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "maxTokens": 1200,
+          "temperature": 0.2,
+          "store": false
+        }
+      },
+      "id": "0a8e7732-fb92-59f9-9c24-cf1d83b0e39c",
+      "name": "KI: Zusammenfassen",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1680,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function kiText(j) {\n  if (typeof j === 'string') return j;\n  for (const k of ['content', 'text', 'output_text', 'message']) {\n    const v = j?.[k];\n    if (typeof v === 'string') return v;\n    if (v && typeof v === 'object' && typeof v.content === 'string') return v.content;\n  }\n  if (Array.isArray(j?.output)) {\n    const t = j.output.flatMap(o => (o.content || [])).map(c => c?.text).filter(Boolean).join('\\n');\n    if (t) return t;\n  }\n  return JSON.stringify(j);\n}\n\nconst cfg = $('Konfiguration').first().json.cfg;\n\nconst termine = $('Tabelle termine lesen (Z)').all().map(i => i.json).filter(t => t.termin_id);\ntermine.sort((a, b) => String(b.erstellt_am).localeCompare(String(a.erstellt_am)));\nconst termin = termine[0] || { termin_id: 'ohne-termin', titel: 'ohne Termin', datum: '' };\nconst rows = $('Tabelle rückmeldungen lesen').all().map(i => i.json)\n  .filter(r => r.rueckmeldung_id && r.termin_id === termin.termin_id);\n\nconst erwartet = rows.map(r => r.rueckmeldung_id);\nconst text = kiText($json);\nconst gefunden = [...new Set(text.match(/R-[A-Z0-9]{5}/g) || [])];\nconst fehlend = erwartet.filter(id => !gefunden.includes(id));\nconst erfunden = gefunden.filter(id => !erwartet.includes(id));\nconst versuch = $runIndex + 1;\nconst vollstaendig = fehlend.length === 0 && erfunden.length === 0;\nconst entwurf = text.replace(/```html|```/g, '').trim();\nconst fuss = `<hr><p style=\"color:#767676;font-size:12px\">Automatisch erstellt und geprüft: ${erwartet.length} Rückmeldungen, jede mit ID belegt (Versuch ${versuch}).</p>`;\nconst lauf_id = 'L-' + Date.now().toString(36).toUpperCase();\nreturn [{ json: {\n  vollstaendig, fehlend, erfunden, versuch, max_versuche: cfg.max_versuche,\n  lauf_id, termin_id: termin.termin_id, anzahl: erwartet.length,\n  betreff: `Zusammenfassung: ${termin.titel}${termin.datum ? ' (' + termin.datum + ')' : ''}`,\n  html: entwurf + fuss, entwurf,\n} }];\n"
+      },
+      "id": "a499e212-c692-58b6-bf06-161aca275204",
+      "name": "Prüfen: IDs vollständig?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "appIHREBASEID"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "tblIHREZUSAMMENFASSUNGEN",
+          "cachedResultName": "Zusammenfassungen"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lauf_id": "={{ $('Prüfen: IDs vollständig?').first().json.lauf_id }}",
+            "Termin": "={{ [$('Prüfen: IDs vollständig?').first().json.termin_id] }}",
+            "versuch": "={{ $('Prüfen: IDs vollständig?').first().json.versuch }}",
+            "vollstaendig": "={{ $('Prüfen: IDs vollständig?').first().json.vollstaendig }}",
+            "fehlende_ids": "={{ ($('Prüfen: IDs vollständig?').first().json.fehlend || []).join(', ') }}",
+            "anzahl_rueckmeldungen": "={{ $('Prüfen: IDs vollständig?').first().json.anzahl }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "7e7c0ab0-86af-5f68-8143-fd163e1a3f24",
+      "name": "Airtable: Prüflauf",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        560
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4b06c193-71b2-522f-a04c-23eb3124ac5f",
+              "leftValue": "={{ $('Prüfen: IDs vollständig?').first().json.vollstaendig }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8c5321e7-9eb8-5457-aba2-8313c58d4978",
+      "name": "Vollständig?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Konfiguration').first().json.cfg.empfaenger }}",
+        "subject": "={{ $json.betreff }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "={{ $('Konfiguration').first().json.cfg.absender_name }}"
+        }
+      },
+      "id": "97c80ee4-79af-593f-9349-0c1a708cdac9",
+      "name": "Mail: Zusammenfassung",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8d1a5630-8ffc-53f1-b17f-95f19814f1eb",
+              "leftValue": "={{ $json.versuch }}",
+              "rightValue": "={{ $json.max_versuche }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2bc1b6a1-014f-5c7a-9ca1-165bebe461a9",
+      "name": "Noch ein Versuch?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Konfiguration').first().json.cfg.pruefer }}",
+        "subject": "={{ 'Bitte prüfen: ' + $json.betreff }}",
+        "emailType": "html",
+        "message": "={{ '<p>Die automatische Zusammenfassung ist nach ' + $json.versuch + ' Versuchen unvollständig. Fehlende IDs: ' + ($json.fehlend.join(', ') || 'keine') + '. Erfundene IDs: ' + ($json.erfunden.join(', ') || 'keine') + '.</p><hr>' + $json.entwurf }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "={{ $('Konfiguration').first().json.cfg.absender_name }}"
+        }
+      },
+      "id": "cabd155d-0a92-539d-89af-bbf90b7ab574",
+      "name": "Mail: Bitte prüfen",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        820
+      ]
+    }
+  ],
+  "connections": {
+    "Formular: Termin anlegen": {
+      "main": [
+        [
+          {
+            "node": "Modus: Termin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formular: Rückmeldung": {
+      "main": [
+        [
+          {
+            "node": "Modus: Rückmeldung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formular: Jetzt zusammenfassen": {
+      "main": [
+        [
+          {
+            "node": "Modus: Zusammenfassung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zeitplan: Freitag 14 Uhr": {
+      "main": [
+        [
+          {
+            "node": "Modus: Zusammenfassung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modus: Termin": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modus: Rückmeldung": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modus: Zusammenfassung": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Weiche",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weiche": {
+      "main": [
+        [
+          {
+            "node": "Audio vorhanden?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tabelle termine lesen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tabelle termine lesen (Z)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio vorhanden?": {
+      "main": [
+        [
+          {
+            "node": "Transkribieren",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Transkript übernehmen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transkribieren": {
+      "main": [
+        [
+          {
+            "node": "Transkript übernehmen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transkript übernehmen": {
+      "main": [
+        [
+          {
+            "node": "Anfrage: Termin extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anfrage: Termin extrahieren": {
+      "main": [
+        [
+          {
+            "node": "KI: Termin extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KI: Termin extrahieren": {
+      "main": [
+        [
+          {
+            "node": "Termin prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Termin prüfen": {
+      "main": [
+        [
+          {
+            "node": "Für die Tabelle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Für die Tabelle": {
+      "main": [
+        [
+          {
+            "node": "Tabelle termine: einfügen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabelle termine: einfügen": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Termin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable: Termin": {
+      "main": [
+        [
+          {
+            "node": "Kalendereintrag anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabelle termine lesen": {
+      "main": [
+        [
+          {
+            "node": "Rückmeldung aufbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rückmeldung aufbereiten": {
+      "main": [
+        [
+          {
+            "node": "Tabelle rückmeldungen: einfügen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabelle rückmeldungen: einfügen": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Rückmeldung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable: Rückmeldung": {
+      "main": [
+        [
+          {
+            "node": "Aufgaben einzeln",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aufgaben einzeln": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Ideen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabelle termine lesen (Z)": {
+      "main": [
+        [
+          {
+            "node": "Tabelle rückmeldungen lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tabelle rückmeldungen lesen": {
+      "main": [
+        [
+          {
+            "node": "Prompt bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt bauen": {
+      "main": [
+        [
+          {
+            "node": "KI: Zusammenfassen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KI: Zusammenfassen": {
+      "main": [
+        [
+          {
+            "node": "Prüfen: IDs vollständig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prüfen: IDs vollständig?": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Prüflauf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable: Prüflauf": {
+      "main": [
+        [
+          {
+            "node": "Vollständig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vollständig?": {
+      "main": [
+        [
+          {
+            "node": "Mail: Zusammenfassung",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Noch ein Versuch?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Noch ein Versuch?": {
+      "main": [
+        [
+          {
+            "node": "Prompt bauen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mail: Bitte prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "th-koeln"
+    },
+    {
+      "name": "C3"
+    },
+    {
+      "name": "Muster 1 (n8n ruft KI)"
+    }
+  ]
+}

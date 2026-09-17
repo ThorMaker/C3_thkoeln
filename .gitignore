@@ -1,0 +1,58 @@
+# Handout-Repository: geht an die Teilnehmenden.
+# Was hier landet, sehen alle, die Zugriff haben. Im Zweifel nicht hinzufügen.
+
+# ---------------------------------------------------------------- Geheimnisse
+# Nichts davon gehört je in dieses Repository. Lieber zu breit als zu eng.
+.env
+.env.*
+*.env
+**/.env
+.netrc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+*secret*
+*credential*
+*token*
+!**/tokenisierung*
+!**/*Tokenisierung*
+
+# Lokale Claude-Einstellungen: können Pfade, Konten und Zugangsdaten enthalten
+.claude.json
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/.credentials.json
+
+# ---------------------------------------------------------------- Dozentenmaterial
+# Gehört ins private Repository claude-hochschule-2026-dozent, nie hierher.
+# Steht als Netz hier drin, falls jemand versehentlich kopiert.
+leitfaden/
+foliensatz/
+loesungen/
+word/
+sicherung/
+Sprechskript*
+Dozentenleitfaden*
+*.pptx
+
+# ---------------------------------------------------------------- Betriebssystem und Editoren
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.swp
+*~
+.idea/
+.vscode/
+
+# ---------------------------------------------------------------- Zwischenstände
+__pycache__/
+*.pyc
+node_modules/
+graft/
+**/graphify-out/cache/
+**/graphify-out/cost.json
+**/graphify-out/manifest.json
+**/graphify-out/.graphify_*

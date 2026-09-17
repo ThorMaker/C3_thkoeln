@@ -1,0 +1,18 @@
+{
+  "name": "hochschule-2026",
+  "owner": {
+    "name": "ThorMaker"
+  },
+  "metadata": {
+    "description": "Beispiel-Marketplace zum Vortrag an der TH Köln: Werkzeuge für Lehre und Hochschulverwaltung",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "hochschul-toolkit",
+      "source": "./plugins/hochschul-toolkit",
+      "description": "Skills für Gremienprotokolle und die Auswertung von Lehrveranstaltungs-Feedback sowie ein Befehl für Kurzfassungen",
+      "version": "1.0.0"
+    }
+  ]
+}

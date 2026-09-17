@@ -1,0 +1,5 @@
+aufgabe,haeufigkeit_pro_monat,dauer_minuten,automatisierbarkeit,pruefbarkeit,risiko,ampel,einrichtung_minuten,pflege_minuten_pro_monat
+Rückmeldungen zu Terminen zusammenfassen,4,60,0.75,leicht,gering,gelb,480,20
+Übungsaufgaben mit Musterlösung erstellen,6,45,0.6,mittel,gering,gruen,120,10
+Gremienprotokoll vorstrukturieren,2,90,0.5,mittel,mittel,gelb,60,10
+Noten in das Prüfungssystem übertragen,3,40,0.9,leicht,hoch,rot,240,15

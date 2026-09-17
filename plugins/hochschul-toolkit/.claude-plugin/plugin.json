@@ -1,0 +1,15 @@
+{
+  "name": "hochschul-toolkit",
+  "version": "1.0.0",
+  "description": "Werkzeuge für Lehre und Hochschulverwaltung: Gremienprotokolle, Auswertung von Lehrveranstaltungs-Feedback, Kurzfassungen",
+  "author": {
+    "name": "ThorMaker"
+  },
+  "keywords": [
+    "hochschule",
+    "lehre",
+    "verwaltung",
+    "protokoll",
+    "evaluation"
+  ]
+}

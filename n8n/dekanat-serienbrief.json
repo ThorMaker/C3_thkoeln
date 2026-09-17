@@ -1,0 +1,367 @@
+{
+  "name": "Dekanat: Serienbrief als PDF (Gotenberg und QR-Dienst)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Dekanat: Serienbrief als PDF\n**User Story:** Das Dekanat verschickt regelmäßig Briefe an einen festen Kreis (Rückmeldefristen, Einladungen, Bescheide). Bisher: Word-Vorlage, Seriendruck, Anhänge von Hand. Jetzt: Knopfdruck oder Termin, je Person ein fertiges PDF mit persönlichem QR-Code, Versand per Mail.\n\n**Ablauf:** Start → Konfiguration → Empfänger → QR-Code je Person (QR-Dienst) → Brief als HTML → HTML als Datei → PDF (Gotenberg) → Mail mit Anhang.\n\nMuster 1 aus Block 4: n8n orchestriert Dienste, die Arbeit machen die Dienste.",
+        "height": 300,
+        "width": 700,
+        "color": 7
+      },
+      "id": "02f3159d-69be-5bc9-afd9-0964ebf58a2d",
+      "name": "Notiz Überblick",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Technik\n- **QR-Dienst:** eigener Mini-Dienst in der Sandbox (`n8n/sandbox/qr-dienst/`), `GET /qr.png?text=…&groesse=6` liefert ein PNG.\n- **Gotenberg:** HTML nach PDF über ein eingebautes Chromium, `POST /forms/chromium/convert/html` mit der Datei `index.html`; der Header `Gotenberg-Output-Filename` bestimmt den Dateinamen.\n- **Mail:** SMTP-Credential auf Mailpit (Host `mailpit`, Port 1025). Im Echtbetrieb: Postfach des Dekanats.\n- **Empfänger:** hier Beispieldaten im Code-Knoten; im Echtbetrieb eine Data Table oder eine Excel-Datei (Knoten *Extract from File*).\n\nEinrichtung: `n8n/README.md`, Abschnitt Serienbrief.",
+        "height": 300,
+        "width": 620,
+        "color": 6
+      },
+      "id": "03430ab9-fe3c-5171-a64d-44e6c0f5a390",
+      "name": "Notiz Technik",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Datenschutz und Grenzen\nAlle Dienste laufen im Sandbox-Netz, kein Aufruf nach außen, kein externer QR-Dienst. Namen und Adressen bleiben im eigenen Netz.\n\nGrenzen: Gotenberg braucht etwa eine Sekunde je Brief; bei hunderten Briefen den Knoten *Loop Over Items* mit Stapeln davorsetzen. Die Briefvorlage ist bewusst schlicht (HTML im Code-Knoten); ein Logo kommt als Bild-URL im Sandbox-Netz oder als eingebettetes Bild dazu.",
+        "height": 300,
+        "width": 560,
+        "color": 4
+      },
+      "id": "158036e5-433d-556a-b299-c9cab7ba7b82",
+      "name": "Notiz Datenschutz",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        -420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3af8ea08-255a-5b9f-984a-420e9f124675",
+      "name": "Start (manuell)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "monthsInterval": 1,
+              "triggerAtDayOfMonth": 1,
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "dc4ece66-db5c-56ff-ab28-e8eb39e5bfc3",
+      "name": "Jeden Monatsersten 8 Uhr",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ================= KONFIGURATION: hier anpassen =================\nconst cfg = {\n  absender: 'Dekanat Fakultät 10 <dekanat@example.org>',\n  unterschrift: 'Prof. Dr. Erika Beispiel, Dekanin',\n  fakultaet: 'Fakultät für Informatik und Ingenieurwissenschaften (Beispiel)',\n  qr_url: 'http://qr-dienst:8080',          // QR-Dienst der Sandbox\n  gotenberg_url: 'http://gotenberg:3000',   // PDF-Dienst der Sandbox\n};\nreturn [{ json: { cfg } }];\n"
+      },
+      "id": "6a910754-dbd0-5324-9f29-aea01c21587f",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Beispieldaten, erfunden. Im Echtbetrieb: Data Table lesen oder Excel-Datei mit \"Extract from File\".\nconst frist = '30.09.2026';\nconst personen = [\n  { anrede: 'Sehr geehrte Frau Muster', name: 'Anna Muster', email: 'anna.muster@example.org', az: 'F10-2026-0417' },\n  { anrede: 'Sehr geehrter Herr Beispiel', name: 'Bernd Beispiel', email: 'bernd.beispiel@example.org', az: 'F10-2026-0418' },\n  { anrede: 'Sehr geehrte Frau Probe', name: 'Carla Probe', email: 'carla.probe@example.org', az: 'F10-2026-0419' },\n];\nreturn personen.map(p => ({ json: { ...p, frist, link: 'https://example.org/rueckmeldung?az=' + p.az } }));\n"
+      },
+      "id": "0838fb3f-e27d-5529-9715-39f61653e326",
+      "name": "Empfänger (Beispieldaten)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Konfiguration').first().json.cfg.qr_url + '/qr.png?text=' + encodeURIComponent($json.link) + '&groesse=6' }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "qr"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "2a03a1d7-1e11-57d2-9793-f53a94b8b7cb",
+      "name": "QR-Code holen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ein Brief je Person: schlichtes HTML mit Briefkopf, Anschrift, Text und dem QR-Code als eingebettetem Bild.\nconst cfg = $('Konfiguration').first().json.cfg;\nconst personen = $('Empfänger (Beispieldaten)').all();\nconst heute = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });\nconst esc = s => String(s).replace(/[&<>\"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' }[c]));\nconst out = [];\nfor (let i = 0; i < $input.all().length; i++) {\n  const p = personen[i].json;\n  const qr = (await this.helpers.getBinaryDataBuffer(i, 'qr')).toString('base64');\n  const html = `<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><style>\n    @page { size: A4; margin: 20mm 20mm 20mm 25mm; }\n    body { font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; color: #222; line-height: 1.45; }\n    .kopf { border-bottom: 2px solid #C81E0F; padding-bottom: 6pt; margin-bottom: 28pt; display: flex; justify-content: space-between; }\n    .kopf b { color: #C81E0F; font-size: 13pt; }\n    .anschrift { margin: 0 0 28pt 0; white-space: pre-line; }\n    .datum { text-align: right; margin-bottom: 18pt; }\n    h1 { font-size: 13pt; margin: 0 0 12pt 0; }\n    .qr { float: right; margin: 0 0 8pt 16pt; text-align: center; font-size: 8.5pt; color: #555; }\n    .fuss { position: fixed; bottom: 0; left: 0; right: 0; font-size: 8.5pt; color: #777; border-top: 1px solid #ccc; padding-top: 4pt; }\n  </style></head><body>\n  <div class=\"kopf\"><div><b>${esc(cfg.fakultaet)}</b><br>Dekanat</div><div>Aktenzeichen ${esc(p.az)}</div></div>\n  <div class=\"anschrift\">${esc(p.name)}\nBeispielstraße 1\n50678 Köln</div>\n  <div class=\"datum\">Köln, ${heute}</div>\n  <div class=\"qr\"><img src=\"data:image/png;base64,${qr}\" width=\"110\" height=\"110\" alt=\"QR-Code\"><br>Rückmeldung per QR-Code</div>\n  <h1>Rückmeldung zur Prüfungsplanung, Frist ${esc(p.frist)}</h1>\n  <p>${esc(p.anrede)},</p>\n  <p>für die Planung des kommenden Semesters bitten wir Sie um eine kurze Rückmeldung bis zum <b>${esc(p.frist)}</b>.\n  Den Zugang finden Sie über den QR-Code rechts oder unter <a href=\"${esc(p.link)}\">${esc(p.link)}</a>.\n  Die Rückmeldung dauert etwa zwei Minuten.</p>\n  <p>Dieser Brief wurde automatisch erstellt und ist ohne Unterschrift gültig. Bei Fragen erreichen Sie das Dekanat\n  unter dekanat@example.org.</p>\n  <p>Mit freundlichen Grüßen<br><br>${esc(cfg.unterschrift)}</p>\n  <div class=\"fuss\">${esc(cfg.fakultaet)} · Beispielstraße 1 · 50678 Köln · Beispiel aus dem Vortrag, keine echte Post</div>\n  </body></html>`;\n  out.push({ json: { html, email: p.email, name: p.name, az: p.az,\n                     betreff: `Rückmeldung zur Prüfungsplanung bis ${p.frist} (${p.az})`,\n                     dateiname: 'Brief_' + p.az } });\n}\nreturn out;\n"
+      },
+      "id": "e808ed27-997e-50c3-b91d-d469e16fedd1",
+      "name": "Brief als HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "html",
+        "binaryPropertyName": "brief",
+        "options": {
+          "fileName": "index.html",
+          "encoding": "utf8"
+        }
+      },
+      "id": "d7a97f6a-aafd-5aa7-8df5-7fa81e473558",
+      "name": "HTML als Datei",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Konfiguration').first().json.cfg.gotenberg_url }}/forms/chromium/convert/html",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Gotenberg-Output-Filename",
+              "value": "={{ $('Brief als HTML').item.json.dateiname }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "brief"
+            },
+            {
+              "name": "paperWidth",
+              "value": "8.27"
+            },
+            {
+              "name": "paperHeight",
+              "value": "11.7"
+            },
+            {
+              "name": "marginTop",
+              "value": "0"
+            },
+            {
+              "name": "marginBottom",
+              "value": "0"
+            },
+            {
+              "name": "marginLeft",
+              "value": "0"
+            },
+            {
+              "name": "marginRight",
+              "value": "0"
+            },
+            {
+              "name": "printBackground",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "pdf"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "dc6e5976-64ca-5541-99cf-9e61b4aee5c7",
+      "name": "Gotenberg: PDF erzeugen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('Konfiguration').first().json.cfg.absender }}",
+        "toEmail": "={{ $('Brief als HTML').item.json.email }}",
+        "subject": "={{ $('Brief als HTML').item.json.betreff }}",
+        "emailFormat": "text",
+        "text": "={{ 'Guten Tag ' + $('Brief als HTML').item.json.name + ',\\n\\nim Anhang finden Sie unser Schreiben mit Aktenzeichen ' + $('Brief als HTML').item.json.az + '.\\n\\nMit freundlichen Grüßen\\nDekanat' }}",
+        "options": {
+          "fileAttachments": "pdf",
+          "appendAttribution": false
+        }
+      },
+      "id": "f70e5804-031f-57a9-a28d-238aa61f7d59",
+      "name": "Mail: Brief versenden",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1680,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Start (manuell)": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jeden Monatsersten 8 Uhr": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Empfänger (Beispieldaten)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Empfänger (Beispieldaten)": {
+      "main": [
+        [
+          {
+            "node": "QR-Code holen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QR-Code holen": {
+      "main": [
+        [
+          {
+            "node": "Brief als HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brief als HTML": {
+      "main": [
+        [
+          {
+            "node": "HTML als Datei",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML als Datei": {
+      "main": [
+        [
+          {
+            "node": "Gotenberg: PDF erzeugen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gotenberg: PDF erzeugen": {
+      "main": [
+        [
+          {
+            "node": "Mail: Brief versenden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "th-koeln"
+    },
+    {
+      "name": "C3"
+    },
+    {
+      "name": "Beispiel"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./personendaten/**)",
+      "Edit(./personendaten/**)"
+    ],
+    "ask": [
+      "Bash(git push *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/schuetze_ordner.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "allow": ["mcp__n8n-sandbox"],
+    "ask": ["mcp__n8n-mcp"]
+  }
+}
