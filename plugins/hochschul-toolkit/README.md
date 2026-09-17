@@ -11,7 +11,7 @@ Beispiel-Plugin zum Vortrag an der TH Köln. Es zeigt, wie man eigene Arbeitsanw
 ## Installation
 
 ```bash
-claude plugin marketplace add ThorMaker/c3_claudeCodeClub
+claude plugin marketplace add ThorMaker/C3_thkoeln
 claude plugin install hochschul-toolkit@hochschule-2026
 ```
 

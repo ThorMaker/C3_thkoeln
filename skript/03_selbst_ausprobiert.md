@@ -102,7 +102,7 @@ Das Handout-Repository ist zugleich ein **Plugin-Marketplace** [1] mit dem Plugi
 **Weg 1, Kommandozeile** (wenn die CLI installiert ist):
 
 ``` bash
-claude plugin marketplace add ThorMaker/c3_claudeCodeClub
+claude plugin marketplace add ThorMaker/C3_thkoeln
 claude plugin install hochschul-toolkit@hochschule-2026
 ```
 

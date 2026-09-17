@@ -1,0 +1,777 @@
+{
+  "name": "Umfrage anlegen (NocoDB, QR-Code)",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "none",
+        "formTitle": "Neue Umfrage anlegen",
+        "formDescription": "Für Lehrende und Mitarbeitende der TH Köln. Anonyme Rückmeldung auf dem eigenen Server, kein Konto für die Studierenden nötig.",
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "html",
+              "elementName": "einleitung",
+              "html": "<table><tr><td><h3>In drei Schritten zur Umfrage</h3>\n<ol>\n<li><strong>Titel</strong> eintragen.</li>\n<li><strong>Fragen</strong> schreiben, eine je Zeile. Die Schreibweise steht direkt über dem Feld.</li>\n<li>Sagen, <strong>wer antworten darf</strong>.</li>\n</ol>\n<p>Am Ende bekommen Sie den Link für die Studierenden, den QR-Code für die Folie und die Live-Auswertung. Dauert etwa eine Minute. Nichts davon ist endgültig: Schutz und Fragen lassen sich später ändern.</p></td></tr></table>"
+            },
+            {
+              "fieldLabel": "Titel der Umfrage",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "zum Beispiel: Rückmeldung Vorlesung 5"
+            },
+            {
+              "fieldType": "html",
+              "elementName": "fragen-anleitung",
+              "html": "<table><tr><td><h3>So schreiben Sie eine Frage</h3>\n<p>Jede Zeile ist eine Frage. Hinter dem senkrechten Strich steht, welche Antwort Sie wollen:</p>\n<pre>Fragetext | Antwortart</pre>\n<p>Den senkrechten Strich <code>|</code> tippen Sie auf dem Mac mit <code>alt</code> + <code>7</code>, unter Windows mit <code>AltGr</code> + <code>&lt;</code>.</p>\n<table>\n<tr><td><code>Bewertung</code></td><td>fünf Sterne zum Anklicken</td></tr>\n<tr><td><code>Auswahl: a, b, c</code></td><td>Auswahlknöpfe mit genau diesen Möglichkeiten. Nach <code>Auswahl</code> ein Doppelpunkt, zwischen den Möglichkeiten Kommas.</td></tr>\n<tr><td><code>Text</code></td><td>großes Feld für freie Antworten</td></tr>\n<tr><td><code>Zahl</code></td><td>Zahlenfeld</td></tr>\n<tr><td><code>JaNein</code></td><td>ein Häkchen</td></tr>\n<tr><td><em>nichts</em></td><td>ohne Strich und Angabe: einzeiliges Textfeld</td></tr>\n</table>\n<p>Groß- und Kleinschreibung ist egal, Umlaute sind erlaubt. Im Fragetext selbst keinen senkrechten Strich verwenden.</p>\n<p><strong>Beispiel zum Kopieren:</strong></p>\n<pre>Wie verständlich war die Vorlesung? | Bewertung\nDas Tempo war | Auswahl: zu langsam, genau richtig, zu schnell\nWas sollen wir vertiefen? | Text\nWie viele Stunden haben Sie vorbereitet? | Zahl\nIch möchte die Folien per Mail | JaNein</pre></td></tr></table>"
+            },
+            {
+              "fieldLabel": "Fragen, eine je Zeile",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Wie verständlich war die Vorlesung? | Bewertung"
+            },
+            {
+              "fieldType": "html",
+              "elementName": "schutz-anleitung",
+              "html": "<table><tr><td><h3>Wer darf antworten?</h3>\n<p><strong>Offen:</strong> Jede Person, die den QR-Code scannt, kann antworten. Reicht in den meisten Fällen.</p>\n<p><strong>Geschützt:</strong> Vor dem Formular wird eine Matrikelnummer verlangt und mit Ihrer Liste verglichen. Die Antwort bleibt trotzdem anonym: Die Nummer wird nur abgehakt, sie wird nie zusammen mit der Antwort gespeichert.</p>\n<p>Sie können sich hier ruhig falsch entscheiden: Der Schutz lässt sich später in der Tabelle „Umfragen“ mit einem Haken umlegen, der QR-Code bleibt gültig.</p></td></tr></table>"
+            },
+            {
+              "fieldLabel": "Wer darf antworten?",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "alle, die den QR-Code haben"
+                  },
+                  {
+                    "option": "nur Personen auf der Matrikelnummernliste"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldType": "html",
+              "elementName": "nummern-anleitung",
+              "html": "<table><tr><td><h3>Matrikelnummern</h3>\n<p>Nur nötig bei „geschützt“. Eine Nummer je Zeile, oder eine ganze CSV-Datei hineinkopieren: Kopfzeilen, Namen und doppelte Einträge werden von allein aussortiert. Nachtragen geht später jederzeit.</p></td></tr></table>"
+            },
+            {
+              "fieldLabel": "Matrikelnummern (nur bei geschützter Umfrage)",
+              "fieldType": "textarea",
+              "placeholder": "1234567\n2345678"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "path": "umfrage-neu",
+          "buttonLabel": "Umfrage anlegen",
+          "customCss": "\n/* TH-Koeln-Auftritt fuer die oeffentlichen Formulare.\n   Gestaltung laeuft vollstaendig ueber CSS: Der Form Trigger filtert eigenes HTML,\n   das CSS-Feld nicht. Das Logo steckt als Data-URI in einer Hintergrundregel. */\n:root {\n  --font-family: 'Source Sans 3', 'Source Sans Pro', -apple-system, 'Segoe UI', Roboto, sans-serif;\n  --color-primary: #C81E0F;\n  --color-primary-shade-1: #A81809;\n  --color-secondary: #C81E0F;\n  --color-submit-btn-bg: #C81E0F;\n  --color-submit-btn-text: #FFFFFF;\n  --color-button-primary-font: #FFFFFF;\n  --color-header-label: #000000;\n  --color-background: #FFFFFF;\n  --color-card-bg: #FFFFFF;\n  --color-input-border: #C8C8C8;\n  --border-radius-card: 0px;\n  --border-radius-input: 0px;\n}\n\n/* Heller Grund statt n8n-Grau, damit die Karte traegt */\nbody { background: #FFFFFF !important; }\n\n/* Die Karte: Dreiklang-Streifen oben, Logo rechts, klare Kante statt Schatten */\n.card, .form-container, [class*=\"formContainer\"] {\n  border: 1px solid #E4E4E4 !important;\n  border-radius: 0 !important;\n  box-shadow: none !important;\n  border-top: 5px solid #C81E0F !important;\n  padding-top: 84px !important;\n  position: relative !important;\n  background-image: url(\"data:image/png;base64,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\") !important;\n  background-repeat: no-repeat !important;\n  background-position: right 24px top 22px !important;\n  background-size: 92px auto !important;\n}\n\n/* Der Dreiklang als schmaler Streifen unter der roten Kante */\n.card::before, .form-container::before {\n  content: \"\";\n  position: absolute; top: 0; left: 0; right: 0; height: 5px;\n  /* Nur die drei Bereichsfarben: Technology, Arts, Sciences.\n     Schwarz ist die Schriftfarbe der Wortmarke und gehoert nicht in den Streifen. */\n  background: linear-gradient(to right,\n    #C81E0F 0 33.34%, #EA5A00 33.34% 66.67%, #B43092 66.67% 100%);\n}\n\n/* Ueberschrift und Beschreibung */\nh1 { letter-spacing: -0.01em !important; font-weight: 700 !important; color: #000 !important; }\nh2, .description, [class*=\"description\"] { color: #595959 !important; }\n\n/* Beschriftungen: klein, gesperrt, wie die Kicker auf den Folien */\nlabel, .form-label, [class*=\"label\"] {\n  font-weight: 600 !important;\n  color: #000000 !important;\n}\n\n/* Eingabefelder: eckig, ruhig, roter Fokus */\ninput[type=\"text\"], input[type=\"email\"], input[type=\"number\"], textarea, select,\n.el-input__inner, .el-textarea__inner {\n  border-radius: 0 !important;\n  border-color: #C8C8C8 !important;\n}\ninput:focus, textarea:focus, select:focus,\n.el-input__inner:focus, .el-textarea__inner:focus {\n  border-color: #C81E0F !important;\n  box-shadow: 0 0 0 2px rgba(200, 30, 15, 0.15) !important;\n  /* Ohne diese Zeile bleibt der Fokusring des Browsers sichtbar, in Chrome orange. */\n  outline: 2px solid #C81E0F !important;\n  outline-offset: 0 !important;\n}\n\n/* Absendeknopf. n8n benennt die Variablen je nach Fassung anders,\n   deshalb hier die Selektoren direkt, das faengt alle Faelle ab. */\nbutton[type=\"submit\"], .btn--primary, .submit-button, input[type=\"submit\"] {\n  background-color: #C81E0F !important;\n  border-color: #C81E0F !important;\n  color: #FFFFFF !important;\n  border-radius: 0 !important;\n  font-weight: 600 !important;\n  letter-spacing: 0.01em !important;\n}\nbutton[type=\"submit\"]:hover, .btn--primary:hover, .submit-button:hover {\n  background-color: #A81809 !important;\n  border-color: #A81809 !important;\n}\n\n/* Pflichtfeld-Stern in Rot statt n8n-Orange */\n.required, [class*=\"required\"] { color: #C81E0F !important; }\n\n/* Auf dem Telefon bleibt rechts Platz fuer das Logo */\n@media (max-width: 520px) {\n  .card, .form-container { background-size: 74px auto !important; padding-top: 72px !important; }\n}\n\n/* Erklärkästen zwischen den Feldern. n8n entfernt aus eigenem HTML class-Attribute und\n   auch blockquote; Tabellen, Listen, pre, code und Überschriften bleiben (im Formular\n   geprüft). Der Kasten ist deshalb eine einzellige Tabelle, die Typenliste darin eine\n   verschachtelte Tabelle. Alles mit !important gegen die n8n-eigenen Regeln. */\ntable { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important;\n  margin: 4px 0 20px !important; background: #F5F5F5 !important; border-left: 5px solid #C81E0F !important; }\ntable td { padding: 16px 18px 12px !important; font-size: 14.5px !important; line-height: 1.55 !important;\n  color: #333333 !important; vertical-align: top !important; text-align: left !important; }\ntable table { margin: 10px 0 12px !important; background: #FFFFFF !important; border: 1px solid #DADADA !important; border-left: 1px solid #DADADA !important; }\ntable table td { padding: 7px 10px !important; border-bottom: 1px solid #E4E4E4 !important; font-size: 13.5px !important; line-height: 1.45 !important; }\ntable table tr:last-child td { border-bottom: 0 !important; }\ntable table td:first-child { width: 38% !important; white-space: nowrap !important; }\nh3 { margin: 0 0 10px !important; font-size: 17px !important; font-weight: 700 !important; color: #000000 !important; line-height: 1.3 !important; }\ntd p { margin: 0 0 10px !important; font-size: 14.5px !important; line-height: 1.55 !important; color: #333333 !important; }\ntd ol { margin: 0 0 10px 20px !important; padding: 0 !important; }\ntd li { margin: 0 0 5px !important; font-size: 14.5px !important; line-height: 1.5 !important; }\ntd strong { color: #000000 !important; font-weight: 700 !important; }\ntd code { font-family: Menlo, Consolas, 'Courier New', monospace !important; font-size: 12.5px !important;\n  background: #FFFFFF !important; border: 1px solid #C8C8C8 !important; border-radius: 3px !important;\n  padding: 1px 6px !important; color: #C81E0F !important; white-space: nowrap !important; }\ntd pre { font-family: Menlo, Consolas, 'Courier New', monospace !important; font-size: 12.5px !important;\n  background: #FFFFFF !important; border: 1px solid #DADADA !important; border-radius: 3px !important;\n  padding: 10px 12px !important; margin: 8px 0 12px !important; white-space: pre-wrap !important;\n  word-break: break-word !important; overflow-wrap: anywhere !important; line-height: 1.5 !important;\n  color: #333333 !important; max-width: 100% !important; box-sizing: border-box !important; }\nlabel { margin-top: 6px !important; }\n",
+          "ignoreBots": true
+        }
+      },
+      "id": "formular-neue-umfrage",
+      "name": "Formular: Neue Umfrage",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        760
+      ],
+      "webhookId": "c7e9cc5f-2d34-5527-bf75-97fb04c41e6f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.nocodb_url }}/api/v2/meta/bases/{{ $json.base_id }}/tables",
+        "authentication": "predefinedCredentialType",
+        "options": {
+          "timeout": 20000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.titel, table_name: $json.tabellenname, columns: $json.spalten }) }}",
+        "nodeCredentialType": "nocoDbApiToken"
+      },
+      "id": "nocodb-tabelle-anlegen",
+      "name": "NocoDB: Tabelle anlegen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        760
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/meta/tables/{{ $json.id }}/forms",
+        "authentication": "predefinedCredentialType",
+        "options": {
+          "timeout": 20000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: 'Formular', heading: $('Eingaben verstehen').first().json.titel, subheading: 'Anonym. Es wird kein Name und keine Kennung gespeichert.', success_msg: 'Danke! Ihre Antwort ist angekommen.' }) }}",
+        "nodeCredentialType": "nocoDbApiToken"
+      },
+      "id": "nocodb-formular-anlegen",
+      "name": "NocoDB: Formular anlegen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        760
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/meta/views/{{ $json.id }}/share",
+        "authentication": "predefinedCredentialType",
+        "options": {
+          "timeout": 20000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({}) }}",
+        "nodeCredentialType": "nocoDbApiToken"
+      },
+      "id": "nocodb-oeffentlich-teilen",
+      "name": "NocoDB: oeffentlich teilen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        760
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "text",
+        "completionTitle": "={{ $('Ergebnis zusammenstellen').first().json.titel + ' ist angelegt' }}",
+        "completionMessage": "={{ 'Link für die Studierenden (dahin zeigt der QR-Code):\\n' + $('Ergebnis zusammenstellen').first().json.link + '\\n\\nLive-Auswertung in Grafana:\\n' + $('Ergebnis zusammenstellen').first().json.auswertung + '\\n\\nTabelle mit den Antworten:\\n' + $('Ergebnis zusammenstellen').first().json.tabelle_url + '\\n\\n' + ($('Ergebnis zusammenstellen').first().json.geschuetzt ? 'Geschützt, ' + $('Ergebnis zusammenstellen').first().json.anzahl_nummern + ' Matrikelnummern eingetragen.' : 'Offen für alle. Der Schutz lässt sich später in der Tabelle „Umfragen“ per Haken einschalten, der QR-Code bleibt gültig.') + '\\n\\nQR-Code für die Folie: hängt als Bild an dieser Umfrage in der Tabelle „Umfragen“ (Spalte qr_code), dort herunterladen.' }}",
+        "options": {}
+      },
+      "id": "ergebnis-zeigen",
+      "name": "Ergebnis zeigen",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## User Story\n\n**Als Lehrende** will ich vor einer Vorlesung in zwei Minuten eine\nRueckmeldung aufsetzen, **damit** ich waehrend und nach der Sitzung sehe,\nwas angekommen ist, ohne jemanden um Hilfe zu bitten und ohne dass Daten\ndas Haus verlassen.\n\n**Akzeptanzkriterien**\n- Ich tippe Titel und Fragen, sonst nichts.\n- Ich bekomme einen QR-Code zurueck, den ich auf die Folie klebe.\n- Ich sehe die Antworten live, ohne die Seite neu zu laden.\n- Ich kann nachtraeglich entscheiden, ob nur Kursteilnehmende antworten\n  duerfen, **ohne den QR-Code zu tauschen**.\n- Namen werden nie erhoben, auch bei geschuetzten Umfragen nicht.",
+        "height": 400,
+        "width": 460,
+        "color": 4
+      },
+      "id": "notiz-0",
+      "name": "Notiz 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Technik\n\nDieser Workflow wird **nie kopiert**. Er ist die Maschine, jede Umfrage\nist nur eine Kapsel: neue Tabelle, neue Zulassungsliste, neue Steuerzeile,\nneuer QR-Code.\n\n**Fuer Bedienende ohne Programmierkenntnisse:** Nur der Baustein\n*Konfiguration* enthaelt Werte zum Aendern, und er ist ein Klickbaustein.\nDer einzige Baustein mit Code ist *Eingaben verstehen*; er uebersetzt\ngetippte Zeilen in Tabellenspalten und wird nie angefasst.\n\n**Kette:** Formular -> Konfiguration -> Eingaben verstehen ->\nAntworttabelle -> NocoDB-Formular -> teilen -> Zulassungsliste ->\n(nur wenn Nummern da sind) Nummern -> Steuerzeile -> Ergebnis -> QR.\n\n**Der QR-Code zeigt immer auf den Tuersteher**, nie direkt auf NocoDB.\nDeshalb laesst sich der Schutz spaeter in der Tabelle `Umfragen` per Haken\numlegen, ohne dass der QR-Code auf der Folie ungueltig wird.\n\n**Anonym trotz Matrikelnummer:** Die Nummer wird nur in der Zulassungsliste\nabgehakt, nie in der Antworttabelle gespeichert. Wie im Wahllokal:\nVerzeichnis und Urne sind getrennt.\n\n**n8n steht beim Absenden nicht im Weg.** Der Tuersteher schreibt direkt\nnach NocoDB, deshalb halten auch hunderte gleichzeitige Einsendungen.\n\n**Auswertung:** Grafana unter `grafana.vibe-cortex.com`, Dashboard\n*Umfrage-Auswertung*, aktualisiert sich alle zehn Sekunden.\n\n**Zugangsdaten:** Credential *NocoDB API Token*.\n**Dienste, nur im Docker-Netz:** `tuersteher:8080`, `qr-dienst:8080`,\n`gotenberg:3000`.",
+        "height": 620,
+        "width": 780,
+        "color": 7
+      },
+      "id": "notiz-660",
+      "name": "Notiz 660",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        440,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/meta/bases/{{ $('Eingaben verstehen').first().json.base_id }}/tables",
+        "options": {
+          "timeout": 20000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: 'Zugelassen ' + $('Eingaben verstehen').first().json.titel, table_name: 'zugelassen_' + $('Eingaben verstehen').first().json.tabellenname, columns: [ { title: 'matrikelnummer', column_name: 'matrikelnummer', uidt: 'SingleLineText' }, { title: 'abgestimmt', column_name: 'abgestimmt', uidt: 'Checkbox' } ] }) }}"
+      },
+      "id": "nocodb-zulassungsliste-anlegen",
+      "name": "NocoDB: Zulassungsliste anlegen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        760
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/tables/{{ $('NocoDB: Zulassungsliste anlegen').first().json.id }}/records",
+        "options": {
+          "timeout": 20000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Eingaben verstehen').first().json.nummern) }}"
+      },
+      "id": "nocodb-nummern-eintragen",
+      "name": "NocoDB: Nummern eintragen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        580
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      },
+      "notes": "Traegt die Zulassungsliste ein.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/tables/{{ $('Eingaben verstehen').first().json.steuer_id }}/records",
+        "options": {
+          "timeout": 20000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ titel: $('Eingaben verstehen').first().json.titel, kennung: $('Eingaben verstehen').first().json.kennung, antwort_tabelle: $('NocoDB: Tabelle anlegen').first().json.id, formular_uuid: $('NocoDB: oeffentlich teilen').first().json.uuid, geschuetzt: $('Eingaben verstehen').first().json.geschuetzt, zulassung_tabelle: $('NocoDB: Zulassungsliste anlegen').first().json.id, offen: true }) }}"
+      },
+      "id": "nocodb-steuerzeile-anlegen",
+      "name": "NocoDB: Steuerzeile anlegen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        760
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      },
+      "notes": "Diese Zeile ist spaeter die Fernbedienung: Schutz an, Umfrage zu.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2881ebba-b8ce-40a4-b6c6-22769b94b20c",
+              "name": "nocodb_url",
+              "value": "https://nocodb.vibe-cortex.com",
+              "type": "string"
+            },
+            {
+              "id": "2eebd840-33ea-4e9d-9ef2-4dfcf1e33d95",
+              "name": "base_id",
+              "value": "p6jz2gyuwlapqqe",
+              "type": "string"
+            },
+            {
+              "id": "a9066f50-4b09-4b50-a323-515c8dda75e7",
+              "name": "steuer_id",
+              "value": "mxnrok36754lt25",
+              "type": "string"
+            },
+            {
+              "id": "563a2cfe-0850-4b66-913c-10d391bbde54",
+              "name": "umfrage_url",
+              "value": "https://nocodb.vibe-cortex.com/u",
+              "type": "string"
+            },
+            {
+              "id": "907f3f93-20b2-4494-8e10-0eda52dd0a45",
+              "name": "grafana_url",
+              "value": "https://grafana.vibe-cortex.com/d/umfragen-auswertung/umfrage-auswertung",
+              "type": "string"
+            },
+            {
+              "id": "73502d14-7bce-4ca2-8006-a4a3e398985a",
+              "name": "qr_url",
+              "value": "http://qr-dienst:8080",
+              "type": "string"
+            },
+            {
+              "id": "f0a69138-e03b-4513-b865-0b6d194ed33d",
+              "name": "qr_groesse",
+              "value": "10",
+              "type": "string"
+            },
+            {
+              "id": "9fd6ee71-80c7-4fce-951b-78cba54537ae",
+              "name": "titel",
+              "value": "={{ $json['Titel der Umfrage'] }}",
+              "type": "string"
+            },
+            {
+              "id": "c0b355aa-2ab5-4504-85f0-f488320ab80d",
+              "name": "fragen",
+              "value": "={{ $json['Fragen, eine je Zeile'] }}",
+              "type": "string"
+            },
+            {
+              "id": "2c2f460d-c5bd-4a96-a4c7-aba4ec81816d",
+              "name": "geschuetzt",
+              "value": "={{ $json['Wer darf antworten?'] === 'nur Personen auf der Matrikelnummernliste' }}",
+              "type": "boolean"
+            },
+            {
+              "id": "198834f3-4c2d-4a6d-a134-fab8dd26571c",
+              "name": "nummern",
+              "value": "={{ $json['Matrikelnummern (nur bei geschützter Umfrage)'] || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "konfiguration",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        760
+      ],
+      "notes": "Hier und nur hier stehen Adressen und Kennungen. Zum Aendern doppelklicken.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Der einzige Baustein mit Code. Er uebersetzt, was ein Mensch getippt hat,\n// in das, was NocoDB versteht. Bedienende muessen hier nie hinein.\n//\n//   Fragen:  \"tempo | Auswahl: zu langsam, genau richtig\"  ->  Spalte mit Auswahlwerten\n//   Nummern: beliebige Textwiese oder CSV                   ->  saubere Liste\n\nconst TYPEN = { text:'LongText', bewertung:'Rating', zahl:'Number', datum:'Date', janein:'Checkbox' };\nconst schluessel = s => s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')\n                        .replace(/[^a-z0-9_]/g,'_').replace(/^_+|_+$/g,'') || 'feld';\nconst c = $json;\n\n// --- Fragen zu Spalten\nconst spalten = [];\nfor (const zeile of String(c.fragen).split('\\n')) {\n  const roh = zeile.trim();\n  if (!roh) continue;\n  const i = roh.indexOf('|');\n  const name = (i < 0 ? roh : roh.slice(0, i)).trim();\n  const art  = (i < 0 ? '' : roh.slice(i + 1)).trim();\n  if (!name) continue;\n  const klein = art.toLowerCase();\n  if (klein.startsWith('auswahl')) {\n    const werte = art.slice(art.indexOf(':') + 1).split(',').map(w => w.trim()).filter(Boolean);\n    if (!werte.length) throw new Error(`Auswahl ohne Werte: \"${roh}\"`);\n    spalten.push({ title: name, column_name: schluessel(name), uidt: 'SingleSelect',\n                   dtxp: werte.map(w => `'${w.replace(/'/g, \"''\")}'`).join(',') });\n  } else {\n    spalten.push({ title: name, column_name: schluessel(name), uidt: TYPEN[klein] || 'SingleLineText' });\n  }\n}\nif (!spalten.length) throw new Error('Keine Frage erkannt. Mindestens eine Zeile eintragen.');\n\n// --- Matrikelnummern zu einer sauberen Liste\nconst gesehen = new Set();\nconst nummern = [];\nfor (const stueck of String(c.nummern || '').split(/[\\n,;]+/)) {\n  const n = stueck.trim().replace(/^[\"']|[\"']$/g, '');\n  if (!/^[0-9]{3,20}$/.test(n)) continue;   // Kopfzeilen und Namen fliegen raus\n  if (gesehen.has(n)) continue;             // Dubletten auch\n  gesehen.add(n);\n  nummern.push({ matrikelnummer: n });\n}\n\nconst tabellenname = schluessel(c.titel);\nconst kennung = (tabellenname.slice(0, 28) + '-' + Math.random().toString(36).slice(2, 6)).replace(/_+/g, '-');\nreturn [{ json: { ...c, spalten, nummern, anzahl_nummern: nummern.length, tabellenname, kennung } }];"
+      },
+      "id": "eingaben-verstehen",
+      "name": "Eingaben verstehen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        760
+      ],
+      "notes": "Der einzige Code im Workflow. Uebersetzt Tippeingaben in Tabellenspalten.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "50a96654-f771-4ca0-9595-22d5d9b05d95",
+              "name": "titel",
+              "value": "={{ $('Eingaben verstehen').first().json.titel }}",
+              "type": "string"
+            },
+            {
+              "id": "ca6f03cf-242a-4cbf-89fd-b80e1c9ec78e",
+              "name": "kennung",
+              "value": "={{ $('Eingaben verstehen').first().json.kennung }}",
+              "type": "string"
+            },
+            {
+              "id": "9f80fa17-9a1d-4ffe-8b00-bcac4d86e402",
+              "name": "geschuetzt",
+              "value": "={{ $('Eingaben verstehen').first().json.geschuetzt }}",
+              "type": "boolean"
+            },
+            {
+              "id": "2b6e77bd-deff-4cc0-9973-66c4b5417d58",
+              "name": "anzahl_nummern",
+              "value": "={{ $('Eingaben verstehen').first().json.anzahl_nummern }}",
+              "type": "number"
+            },
+            {
+              "id": "4aad3205-c3e2-4ef2-87ef-9db122fcb92e",
+              "name": "link",
+              "value": "={{ $('Eingaben verstehen').first().json.umfrage_url }}/{{ $('Eingaben verstehen').first().json.kennung }}",
+              "type": "string"
+            },
+            {
+              "id": "22fea1fc-440e-4e73-80a4-55a8474eae48",
+              "name": "auswertung",
+              "value": "={{ $('Eingaben verstehen').first().json.grafana_url }}?var-umfrage={{ $('Eingaben verstehen').first().json.tabellenname }}",
+              "type": "string"
+            },
+            {
+              "id": "a7135d83-ffb6-432f-bf7c-58162d2eec0f",
+              "name": "tabelle_url",
+              "value": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/dashboard",
+              "type": "string"
+            },
+            {
+              "id": "a8072889-4c49-4923-95db-adf6a4aa19e8",
+              "name": "qr_url",
+              "value": "={{ $('Eingaben verstehen').first().json.qr_url }}",
+              "type": "string"
+            },
+            {
+              "id": "176c72e2-b622-4514-a0fd-a1ad4920901b",
+              "name": "qr_groesse",
+              "value": "={{ $('Eingaben verstehen').first().json.qr_groesse }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "ergebnis-zusammenstellen",
+      "name": "Ergebnis zusammenstellen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2320,
+        760
+      ],
+      "notes": "Setzt nur Text zusammen, rechnet nichts.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d6e6da92-65ba-43c3-8ec2-2efb6dde9bc2",
+              "leftValue": "={{ $('Eingaben verstehen').first().json.anzahl_nummern }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "gibt-es-nummern",
+      "name": "Matrikelnummern dabei?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        760
+      ],
+      "notes": "Ohne Nummern wird der naechste Schritt uebersprungen.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.qr_url }}/qr.png?text={{ encodeURIComponent($json.link) }}&groesse={{ $json.qr_groesse }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "qr"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "qr-code-holen",
+      "name": "QR-Code holen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2560,
+        760
+      ],
+      "notes": "Holt das Bild vom QR-Dienst. Braucht keine Zugangsdaten.",
+      "notesInFlow": true
+    },
+    {
+      "id": "qr-hochladen-0001",
+      "name": "NocoDB: QR hochladen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1900,
+        300
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/storage/upload?path=noco/{{ $('Eingaben verstehen').first().json.base_id }}/{{ $('Eingaben verstehen').first().json.steuer_id }}/qr_code",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "qr"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "qr-eintragen-0001",
+      "name": "NocoDB: QR an Umfragezeile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2140,
+        300
+      ],
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Eingaben verstehen').first().json.nocodb_url }}/api/v2/tables/{{ $('Eingaben verstehen').first().json.steuer_id }}/records",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify([{ Id: $('NocoDB: Steuerzeile anlegen').first().json.Id, qr_code: $('NocoDB: QR hochladen').all().map(i => i.json).filter(j => j && j.path) }]) }}",
+        "options": {
+          "timeout": 20000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Formular: Neue Umfrage": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Eingaben verstehen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Tabelle anlegen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Formular anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Formular anlegen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: oeffentlich teilen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: oeffentlich teilen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Zulassungsliste anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QR-Code holen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: QR hochladen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Zulassungsliste anlegen": {
+      "main": [
+        [
+          {
+            "node": "Matrikelnummern dabei?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Nummern eintragen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Steuerzeile anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Steuerzeile anlegen": {
+      "main": [
+        [
+          {
+            "node": "Ergebnis zusammenstellen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eingaben verstehen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Tabelle anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matrikelnummern dabei?": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Nummern eintragen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NocoDB: Steuerzeile anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ergebnis zusammenstellen": {
+      "main": [
+        [
+          {
+            "node": "QR-Code holen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: QR hochladen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: QR an Umfragezeile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: QR an Umfragezeile": {
+      "main": [
+        [
+          {
+            "node": "Ergebnis zeigen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": true,
+  "id": "vo0OZr9aI4KXHzaj"
+}

@@ -1,0 +1,604 @@
+{
+  "id": "gOQMWHJmghfLE5k8",
+  "name": "Umfrage zusammenfassen (NocoDB, KI)",
+  "nodes": [
+    {
+      "id": "5785f6b6-6782-574e-becc-60782f19afa4",
+      "name": "Notiz Überblick",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        -420
+      ],
+      "parameters": {
+        "content": "## Umfrage zusammenfassen (NocoDB, KI)\n\n**User Story:** Als Lehrende drücke ich am Ende des Termins in Grafana auf „Zusammenfassen“ und bekomme eine Seite mit der Auswertung: wer im Raum war, welche Aufgaben sich wiederholen, was gewünscht wird. Nichts läuft von allein, der Knopf ist die Entscheidung.\n\n**Ablauf:** Link aus Grafana (GET, `?kennung=…`) → Steuertabelle liefert die Antworttabelle → Antworten lesen → Prompt mit Nummern R-1, R-2 … → KI → Code prüft, ob jede Nummer belegt ist (höchstens drei Versuche) → Ergebnis nach NocoDB `zusammenfassungen` → Seite anzeigen. Grafana zeigt dieselbe Tabelle.\n\n**Nur zwei Code-Bausteine**, und beide sind unvermeidbar: „Prompt bauen“ (nummerierte Zeilen aus beliebigen Spalten) und „Prüfen“ (der Sinn des Ablaufs). Alles andere sind Klickbausteine. Einstellungen nur in „Konfiguration“.\n\nQuelle: `n8n-umfrage-zusammenfassen.py` (Generator). AI-assisted: Claude, human-reviewed ausstehend, 17.09.2026",
+        "width": 720,
+        "height": 300,
+        "color": 4
+      }
+    },
+    {
+      "id": "29a765da-d3dc-5e98-abbf-3f1c1af0e747",
+      "name": "Notiz Prüfschleife",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -420
+      ],
+      "parameters": {
+        "content": "## Warum die Schleife\n\nDie KI muss jede Antwort mit ihrer Nummer belegen. Fehlt eine Nummer oder ist eine erfunden, geht der Entwurf mit dem Befund zurück, höchstens dreimal. Danach wird gespeichert, aber als unvollständig markiert, und die Seite sagt es. Unter fünf Antworten sagt die KI ausdrücklich, dass sich nichts ableiten lässt.\n\nModell und Grenzen stehen in „Konfiguration“, nicht im Code.",
+        "width": 620,
+        "height": 220,
+        "color": 5
+      }
+    },
+    {
+      "id": "e723883e-624e-56e8-bb44-a7e796d7f3fa",
+      "name": "Knopf: Zusammenfassen",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -200,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "umfrage-zusammenfassen",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "daf16fe8-fb3b-58e3-add6-1fa039d850ed"
+    },
+    {
+      "id": "1ec106d6-c12a-55cf-b498-71c4bc204496",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        40,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "87ac1e79-4626-5431-80a0-c00c7cff8dd0",
+              "name": "nocodb_url",
+              "value": "https://nocodb.vibe-cortex.com",
+              "type": "string"
+            },
+            {
+              "id": "e062bee9-7e40-5b76-b62b-3d587fee908c",
+              "name": "steuer_id",
+              "value": "mxnrok36754lt25",
+              "type": "string"
+            },
+            {
+              "id": "4a6b1556-ce1f-5327-b165-796b47f5e60c",
+              "name": "ziel_id",
+              "value": "mkioi5fmpdovc26",
+              "type": "string"
+            },
+            {
+              "id": "ff8c28e4-78b6-541e-8494-aceb4518e8b5",
+              "name": "llm_model",
+              "value": "gpt-4.1",
+              "type": "string"
+            },
+            {
+              "id": "d7a1c4ec-5655-5519-a410-8516dad970f9",
+              "name": "max_versuche",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "26945bdf-0dfe-57b0-8722-b8a8868f263c",
+              "name": "max_worte",
+              "value": 700,
+              "type": "number"
+            },
+            {
+              "id": "4dd65ebf-a688-589e-9b69-a4ca6f39e8d3",
+              "name": "kennung",
+              "value": "={{ $json.query.kennung || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "5e706c7e-272b-5e26-98c8-98ff77cd0579",
+      "name": "NocoDB: Umfrage finden",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.nocodb_url }}/api/v2/tables/{{ $json.steuer_id }}/records?where=(kennung,eq,{{ $json.kennung }})&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "options": {}
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "id": "de71f031-3ae5-5a08-bfd4-d6cd47545a45",
+      "name": "Umfrage gefunden?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1bfd9e25-98fd-50e7-b490-a88dab1116c1",
+              "leftValue": "={{ ($json.list || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a1178b50-b7b3-5d80-a4fe-0c1391a50a2a",
+      "name": "Seite: Kennung unbekannt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        200
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ '<!doctype html><html lang=\"de\"><meta charset=\"utf-8\"><body style=\"font-family:sans-serif;max-width:700px;margin:40px auto\"><h1>Umfrage nicht gefunden</h1><p>Zur Kennung „' + $('Konfiguration').first().json.kennung + '“ gibt es keine Zeile in der Steuertabelle „Umfragen“. In Grafana oben die Umfrage wählen, dann erneut klicken.</p></body></html>' }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "b29b2e5d-1219-5407-a763-322a74a34aca",
+      "name": "Umfrage wählen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a8b3aed-710f-5ec0-81ee-42c5bd4ae7c0",
+              "name": "titel",
+              "value": "={{ $json.list[0].titel }}",
+              "type": "string"
+            },
+            {
+              "id": "6a35a2b2-9477-58ed-a290-aa11b54488c7",
+              "name": "kennung",
+              "value": "={{ $json.list[0].kennung }}",
+              "type": "string"
+            },
+            {
+              "id": "2d89f0fe-b311-5140-bfae-f8176fa84d03",
+              "name": "antwort_tabelle",
+              "value": "={{ $json.list[0].antwort_tabelle }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "34f34062-6054-54f0-bc5d-93b9a1082721",
+      "name": "NocoDB: Antworten lesen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Konfiguration').first().json.nocodb_url }}/api/v2/tables/{{ $json.antwort_tabelle }}/records?limit=1000",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "options": {}
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "id": "25c3ad50-d0f5-54b9-bd42-e2686f8ea090",
+      "name": "Prompt bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const cfg = $('Konfiguration').first().json;\nconst umfrage = $('Umfrage wählen').first().json;\nconst rows = ($('NocoDB: Antworten lesen').first().json.list || []).filter(r => !r.__nc_deleted);\nconst SYSTEM = ['Id','CreatedAt','UpdatedAt','nc_created_by','nc_updated_by','nc_order','__nc_deleted','nc_row_meta'];\nconst fragen = rows.length ? Object.keys(rows[0]).filter(k => !SYSTEM.includes(k)) : [];\nconst versuch = $runIndex + 1;              // jeder Durchlauf der Schleife erhöht den Zähler\nconst vorher = versuch > 1 ? $json : null;  // beim Wiederholen: Ergebnis der Prüfung\nconst zeilen = rows.map(r => `[R-${r.Id}] ` + fragen.map(f => `${f}: ${String(r[f] ?? '').replace(/\\s+/g, ' ').trim() || '(leer)'}`).join(' | '));\nconst system = `Du wertest die anonyme Rückmeldung zu einem Weiterbildungstermin aus. Ziel ist eine Tagesordnung für das nächste Mal, keine Lobhudelei.\nPflicht: Jede Antwort wird mindestens einmal mit ihrer Nummer in eckigen Klammern belegt, z.B. [R-12]. Erfinde keine Nummern.\nAufbau als HTML ohne <html>-Rahmen:\n<h3>Wer im Raum war</h3> Verteilung nach Bereich und Vorkenntnissen in zwei Sätzen.\n<h3>Was sich wiederholt</h3> Die genannten Aufgaben zu Gruppen zusammengefasst, größte Gruppe zuerst, jede mit Nummern belegt.\n<h3>Gewünschte Themen und Hürden</h3> Nach Häufigkeit, mit Anzahl.\n<h3>Wie es weitergehen soll</h3> Verteilung der Antworten und daraus eine Empfehlung in einem Satz.\n<h3>Alle Antworten, je eine Zeile</h3> Eine Liste mit jeder Nummer genau einmal: [R-n] und die Freitextangaben dieser Antwort in höchstens zwölf Wörtern. Keine weglassen, das ist der Beleg. Diese Liste zählt nicht zur Wortgrenze.\nSachlich, höchstens ${cfg.max_worte} Wörter, keine Wertungen über Personen, keine Namen. Wenn eine Angabe fehlt, sag das, statt sie zu ergänzen.\nBei weniger als fünf Antworten beginnst du mit dem Satz: „Bei ${rows.length} Antworten lässt sich daraus nichts ableiten.“ und bleibst danach kurz.`;\nlet user = `Umfrage: ${umfrage.titel}\\nFragen: ${fragen.join(' | ')}\\n\\nAntworten, eine je Zeile, ${rows.length} Stück:\\n${zeilen.join('\\n') || '(keine)'}`;\nif (vorher) user += `\\n\\nKorrektur, Versuch ${versuch}: Im letzten Entwurf fehlten diese Nummern: ${vorher.fehlend.join(', ') || 'keine'}. Erfunden waren: ${vorher.erfunden.join(', ') || 'keine'}. Schreibe die Zusammenfassung vollständig neu.`;\nreturn [{ json: { versuch, anzahl: rows.length, system, user } }];"
+      }
+    },
+    {
+      "id": "ac6c62dd-70e9-5e0f-9eac-9ac9eb0e3082",
+      "name": "KI: Zusammenfassen",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1480,
+        0
+      ],
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Konfiguration').first().json.llm_model }}"
+        },
+        "responses": {
+          "values": [
+            {
+              "type": "text",
+              "role": "system",
+              "content": "={{ $json.system }}"
+            },
+            {
+              "type": "text",
+              "role": "user",
+              "content": "={{ $json.user }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "maxTokens": 2500,
+          "temperature": 0.2,
+          "store": false
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "DMUo3dukcG9RCfVp",
+          "name": "th-assist"
+        }
+      }
+    },
+    {
+      "id": "c84adb9e-0f03-519c-b708-9403e71aea93",
+      "name": "Prüfen: Nummern vollständig?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        0
+      ],
+      "parameters": {
+        "jsCode": "function kiText(j) {\n  if (typeof j === 'string') return j;\n  for (const k of ['content', 'text', 'output_text', 'message']) {\n    const v = j?.[k];\n    if (typeof v === 'string') return v;\n    if (v && typeof v === 'object' && typeof v.content === 'string') return v.content;\n  }\n  if (Array.isArray(j?.output)) {\n    const t = j.output.flatMap(o => (o.content || [])).map(c => c?.text).filter(Boolean).join('\\n');\n    if (t) return t;\n  }\n  return JSON.stringify(j);\n}\n\nconst cfg = $('Konfiguration').first().json;\nconst umfrage = $('Umfrage wählen').first().json;\nconst rows = ($('NocoDB: Antworten lesen').first().json.list || []).filter(r => !r.__nc_deleted);\nconst erwartet = rows.map(r => `R-${r.Id}`);\nconst text = kiText($json).replace(/```html|```/g, '').trim();\nconst gefunden = [...new Set(text.match(/R-\\d+/g) || [])];\nconst fehlend = erwartet.filter(id => !gefunden.includes(id));\nconst erfunden = gefunden.filter(id => !erwartet.includes(id));\nconst versuch = $runIndex + 1;\nconst vollstaendig = fehlend.length === 0 && erfunden.length === 0;\nreturn [{ json: { vollstaendig, fehlend, erfunden, versuch, max_versuche: cfg.max_versuche,\n  kennung: umfrage.kennung, titel: umfrage.titel, anzahl: erwartet.length, text } }];"
+      }
+    },
+    {
+      "id": "996083fd-5a2d-534e-a52b-81204923c780",
+      "name": "Vollständig?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1960,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f37b3428-3be3-5a8c-81b6-cf5d1a89c620",
+              "leftValue": "={{ $json.vollstaendig }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e998ecb5-d9e4-586f-85ac-75440a127b20",
+      "name": "Noch ein Versuch?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "882bef3a-175e-583e-9d1f-d8ffc98d9840",
+              "leftValue": "={{ $json.versuch }}",
+              "rightValue": "={{ $json.max_versuche }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "584ddc1b-f7ac-5861-9a4f-3e2e88586db2",
+      "name": "NocoDB: Zusammenfassung speichern",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2440,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Konfiguration').first().json.nocodb_url }}/api/v2/tables/{{ $('Konfiguration').first().json.ziel_id }}/records",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "nocoDbApiToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ kennung: $json.kennung, titel: $json.titel, text: $json.text, anzahl: $json.anzahl, versuch: $json.versuch, vollstaendig: $json.vollstaendig, fehlende: ($json.fehlend || []).join(', ') }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "GhAnCXTtzgWiLOYE",
+          "name": "NocoDB API Token"
+        }
+      }
+    },
+    {
+      "id": "f46c19d3-b9ca-52e1-9fb5-947f85a28ff6",
+      "name": "Seite anzeigen",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2680,
+        0
+      ],
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ (() => { const p = $('Prüfen: Nummern vollständig?').first().json; const hinweis = p.vollstaendig ? '' : `<p style=\"background:#fde7e4;padding:10px\">Nach ${p.versuch} Versuchen unvollständig, fehlende Nummern: ${(p.fehlend||[]).join(', ') || 'keine'}, erfunden: ${(p.erfunden||[]).join(', ') || 'keine'}. Bitte selbst prüfen.</p>`; return `<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><title>Zusammenfassung: ${p.titel}</title><style>body{font-family:'Source Sans 3',Helvetica,Arial,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;color:#333;line-height:1.5}h1{color:#C81E0F}h3{color:#EA5A00;margin-top:1.4em}small{color:#767676}</style></head><body><h1>${p.titel}</h1><small>${p.anzahl} Antworten, Versuch ${p.versuch}, jede Antwort mit Nummer belegt: ${p.vollstaendig ? 'ja' : 'nein'}. Gespeichert in NocoDB, sichtbar in Grafana.</small>${hinweis}${p.text}</body></html>`; })() }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Knopf: Zusammenfassen": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Umfrage finden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Umfrage finden": {
+      "main": [
+        [
+          {
+            "node": "Umfrage gefunden?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Umfrage gefunden?": {
+      "main": [
+        [
+          {
+            "node": "Umfrage wählen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Seite: Kennung unbekannt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Umfrage wählen": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Antworten lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Antworten lesen": {
+      "main": [
+        [
+          {
+            "node": "Prompt bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt bauen": {
+      "main": [
+        [
+          {
+            "node": "KI: Zusammenfassen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KI: Zusammenfassen": {
+      "main": [
+        [
+          {
+            "node": "Prüfen: Nummern vollständig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prüfen: Nummern vollständig?": {
+      "main": [
+        [
+          {
+            "node": "Vollständig?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vollständig?": {
+      "main": [
+        [
+          {
+            "node": "NocoDB: Zusammenfassung speichern",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Noch ein Versuch?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Noch ein Versuch?": {
+      "main": [
+        [
+          {
+            "node": "Prompt bauen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NocoDB: Zusammenfassung speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NocoDB: Zusammenfassung speichern": {
+      "main": [
+        [
+          {
+            "node": "Seite anzeigen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": "c3-kickoff"
+  }
+}

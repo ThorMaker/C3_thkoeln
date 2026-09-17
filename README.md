@@ -1,58 +1,94 @@
-# C3: Claude Code Club
+# C3: Claude Code Club an der TH Köln
 
-Unterlagen zur Reihe **„Claude Code, Automatisierung, Wissen“** an der TH Köln.
-Erster Termin am 18. September 2026.
+Unterlagen zur Reihe **„Claude Code, Automatisierung, Wissen“**. Kick-off am 18. September 2026,
+weitere Termine nach Bedarf der Teilnehmenden.
 
-Dieses Repository ist Skript, Übungsprojekt und Werkzeugkasten zugleich. Öffnen Sie es in Claude Code, und Claude erklärt Ihnen die Inhalte, stellt Verständnisfragen und begleitet die Übungen. Sie müssen dafür nicht programmieren können.
-
-## Die Reihe
-
-Drei Vormittage, jeweils 09:30 bis 11:30 Uhr. Jeder Termin steht für sich; wer einen verpasst, kommt über das Skript mit.
-
-| Termin | Thema | Worum es geht |
-|---|---|---|
-| **1** | Verstehen und fragen | Was ein Agent ist, was mit Ihren Daten passiert, wie Sie Claude auf Ihre Arbeit einstellen |
-| **2** | Selber bauen | Ihr erster eigener Skill, danach eine offene Werkstatt an Ihrem echten Fall |
-| **3** | Vertiefen und übertragen | Wie Ihr Wissen zur KI kommt, Zusammenarbeit im Team, was es wirklich spart |
-
-**Zwischen Termin 1 und 2 gibt es Aufgaben.** Sie stehen in `aufgaben/`, mit Hinweisen, aber bewusst ohne fertige Lösung.
+Dieses Repository ist Skript, Folien, Übungsprojekt und Werkzeugkasten zugleich. Öffnen Sie es in
+Claude Code, und Claude erklärt Ihnen die Inhalte, stellt Verständnisfragen und begleitet die
+Übungen. Sie müssen dafür nicht programmieren können.
 
 ## Schnellstart in drei Minuten
 
 1. **Herunterladen:** oben auf „Code“ und „Download ZIP“ klicken, ZIP entpacken.
-   Mit Git: `git clone https://github.com/ThorMaker/c3_claudeCodeClub.git`
-2. **Öffnen:** Claude Desktop starten, Tab **Code**, Umgebung **Local**, den Ordner `claude-hochschule-2026` als Projektordner wählen, Modus **Manual**.
+   Mit Git: `git clone https://github.com/ThorMaker/C3_thkoeln.git`
+2. **Öffnen:** Claude Desktop starten, Tab **Code**, Umgebung **Local**, den entpackten Ordner als
+   Projektordner wählen, Modus **Manual**.
 3. **Loslegen:** eingeben: `Erkläre mir dieses Repository in fünf Sätzen. Ändere nichts.`
 
 Voraussetzungen: Claude Desktop mit Pro-Konto (oder höher). Unter Windows zusätzlich Git for Windows.
 
-## Inhalt
+## Wenn Sie nur eines lesen
+
+`vorlagen/konzepte.md`: **41 Konzepte der KI-Technik**, jedes mit Bild, wofür es gut ist, wann es sich
+lohnt, wo die Grenze liegt, und mit Quellen. Vier Teile: wie man damit arbeitet, wie ein Modell rechnet,
+wie es das Richtige findet, wie man es anbindet. Auch als PDF: `vorlagen/Konzepte.pdf`.
+
+## Folien
+
+Alle Foliensätze liegen in `folien/`, als PowerPoint und als PDF, ohne Sprechtext.
+
+| Datei | Inhalt |
+|---|---|
+| `Kickoff_2026-09-18` | der Kick-off, so wie er gehalten wurde (ausgeblendete Folien sind Reserve, die nicht dran war) |
+| `Alle_Folien_Gesamt` | der komplette Satz aller Themen, mit Kapiteln je Thema in der Foliensortierung |
+| `Folge1_…`, `Folge2_…`, `Folge3_…` | die drei Vormittage der Reihe: verstehen und anfangen, selber bauen, vertiefen |
+| `Ideenkatalog_Hochschule` | zwölf durchgerechnete Vorhaben für Lehre und Verwaltung, mit Aufwand und Nutzen |
+| `Konzepte_Anhang` | die 41 Konzepte als Folien |
+
+Zu jeder Inhaltsfolie gehört eine Quellenzeile, das Verzeichnis steht am Ende jedes Satzes.
+
+## Empfohlener Weg durch die Unterlagen
+
+Wer die Reihe allein nachvollziehen will, arbeitet in dieser Reihenfolge; jeder Schritt baut auf dem
+vorigen auf und ist in unter einer Stunde machbar.
+
+| # | Schritt | Wo | Dauer |
+|---|---|---|---|
+| 1 | Einstellungen richtig setzen | `vorlagen/Datenschutz_in_5_Minuten.pdf`, `vorlagen/datenschutz-checkliste.md` | 10 Min |
+| 2 | Skript Kapitel 1 lesen: Agent, Daten, Ampel | `skript/01_grundlagen_und_datenschutz.md` | 30 Min |
+| 3 | Eigene Regeldatei anlegen | `vorlagen/CLAUDE-global-vorher.md` und `-nachher.md`, `vorlagen/CLAUDE-projekt-vorlage.md` | 20 Min |
+| 4 | Repository erkunden, erster Fehler im Plan-Modus | `diy/01_…`, `diy/04_…`, `beispiele/literaturliste/` | 20 Min |
+| 5 | Ersten eigenen Skill bauen | `diy/02_eigener-skill.md`, `vorlagen/skill-vorlage/` | 30 Min |
+| 6 | Plugin installieren und ausprobieren | `plugins/hochschul-toolkit/README.md` | 10 Min |
+| 7 | Einen Ablauf in n8n importieren | `n8n/README.md`, `diy/05_…`, Sandbox in `n8n/sandbox/` | 45 Min |
+| 8 | Wissensgraph aus eigenen Unterlagen | `diy/06_…`, `second-brain-demo/` | 20 Min |
+| 9 | Eigenen Fall finden: Prozessinventur | `diy/07_…`, `tools/`, Kapitel 8 | 20 Min |
+| 10 | Aufgaben, die länger laufen: Loop | `diy/08_…`, `loop-demo/`, Kapitel 7 | 20 Min |
+
+Die Aufgaben zwischen den Terminen stehen in `aufgaben/`, mit Hinweisen, aber bewusst ohne Lösung.
+
+## Beispiel-Workflows
+
+| Ordner | Was drin ist |
+|---|---|
+| `n8n/dekanat-live-klammer.json` | der durchgehende Fall aus Folge 1: Termin per Sprachnachricht anlegen, Rückmeldungen sammeln, Zusammenfassung mit Prüfschleife (Airtable) |
+| `n8n/dekanat-serienbrief.json` | Serienbrief als PDF mit QR-Code, über kleine Dienste (Gotenberg, QR) |
+| `n8n/umfrage/` | die Strecke hinter dem QR-Code des Kick-offs: Umfrage anlegen, Türsteher, Live-Bild in Grafana, Zusammenfassung auf Knopfdruck, alles auf eigenem Server |
+| `n8n/claude-auftrag-einrichten.md` | fertiger Auftrag an Claude Code, einen Workflow über die Schnittstelle einzurichten |
+| `n8n/sandbox/` | abgeschottete n8n-Instanz mit Docker, in der Claude alles ausprobieren darf |
+
+Jeder Workflow trägt seine Beschreibung als Notiz im Workflow selbst (User Story und Technik).
+
+## Inhalt im Überblick
 
 | Ordner | Inhalt |
 |---|---|
-| `aufgaben/` | die Aufgaben zwischen den Terminen, mit Prüffrage statt Lösung |
-| `skript/` | das Skript als Markdown; Kapitelnummer = Block im Vortrag |
-| `demo-ordner/` | zweimal derselbe Ordner, einmal mit und einmal ohne `CLAUDE.md`: der Vergleich aus Termin 1 zum Nachspielen |
+| `folien/` | alle Foliensätze, PowerPoint und PDF, ohne Sprechtext |
+| `skript/` | das Skript als Markdown; Kapitelnummer = Block im Vortrag, jedes Kapitel mit Quellenverzeichnis |
+| `vorlagen/` | Konzepte (41, mit Quellen), Glossar, Kursempfehlungen, CLAUDE.md vorher und nachher, Datenschutz-Profil, Leitplanken, Skill-Vorlage, Starter-Prompts |
+| `aufgaben/` | die Aufgaben zwischen den Terminen |
 | `diy/` | Aufgabenkarten für die Übungen |
-| `vorlagen/Glossar_KI.pdf` | Glossar mit Fachbegriffen und Quellen zum Weitergeben |
-| `vorlagen/Konzepte.pdf` | Anhang „Konzepte der KI-Technik“: je Konzept ein Bild, wofür es gut ist, wann es sich lohnt, wo die Grenze liegt (41 Konzepte, auch als `vorlagen/konzepte.md`) |
-| `vorlagen/Weiterlernen.pdf` | zwölf geprüfte Kursempfehlungen in fünf Stufen, mit Aufwand, Sprache, Kosten und der Angabe, für wen ein Angebot nichts ist (auch als `vorlagen/weiterlernen.md`) |
-| `vorlagen/` | CLAUDE.md vorher und nachher, Datenschutz-Profil, Leitplanken (Berechtigungsregeln und Hook), Checkliste, Einstellungs-Handout „Datenschutz in 5 Minuten“ (PDF), Skill-Vorlage, Starter-Prompts |
-| `.claude/skills/` | Projekt-Skills: `skript-tutor` (Lernbegleitung), `mail-dekanat` (Musterlösung der Übung), `handover` (Übergabe vor `/clear`), `prozessinventur` (Automatisierungskandidaten bewerten) |
-| `.claude/agents/` | eigener Unteragent `quellen-pruefer` (prüft Texte auf Belege, nur lesend) |
-| `beispiele/literaturliste/` | kleines Python-Projekt mit zwei absichtlichen Fehlern und eigener `CLAUDE.md` für den Unterordner |
+| `demo-ordner/` | zweimal derselbe Ordner, einmal mit und einmal ohne `CLAUDE.md` |
+| `beispiele/literaturliste/` | kleines Python-Projekt mit zwei absichtlichen Fehlern |
+| `.claude/skills/`, `.claude/agents/` | Projekt-Skills (`skript-tutor`, `mail-dekanat`, `handover`, `prozessinventur`) und der Unteragent `quellen-pruefer` |
 | `plugins/hochschul-toolkit/` | Beispiel-Plugin mit Skills für Gremienprotokolle und Lehrveranstaltungs-Feedback |
 | `.claude-plugin/marketplace.json` | macht dieses Repository zu einem Plugin-Marketplace |
-| `n8n/` | Workflow des durchgehenden Falls zum Importieren, Einrichtungsanleitung, Prompts, Muster 2 mit MCP |
-| `n8n/claude-auftrag-einrichten.md` | fertiger Auftrag an Claude Code, den Workflow über MCP einzurichten |
-| `n8n/sandbox/` | abgeschottete n8n-Instanz mit Docker, in der Claude alles ausprobieren darf |
+| `n8n/` | die Beispiel-Workflows, siehe oben |
 | `second-brain-demo/` | fiktiver Notizkorpus für Graphify und Code-Beispiel für Graft |
 | `loop-demo/` | Loop mit `/goal` und deterministischem Prüfskript |
 | `zusammenarbeit/` | Team-Repository-Vorlage mit ADRs und gemeinsamen Leitplanken |
 | `tools/` | QR-Code-Erzeuger, Prozessinventur-Auswertung |
 | `diagramme/` | Abbildungen aus Skript und Vortrag |
-
-Enthalten sind alle Kapitel mit ihren Beispielprojekten. Die Kapitelnummer entspricht dem Block im Vortrag.
 
 ## Übungen
 
@@ -73,26 +109,30 @@ Enthalten sind alle Kapitel mit ihren Beispielprojekten. Die Kapitelnummer entsp
 ## Plugin aus diesem Repository installieren
 
 ```bash
-claude plugin marketplace add ThorMaker/c3_claudeCodeClub
+claude plugin marketplace add ThorMaker/C3_thkoeln
 claude plugin install hochschul-toolkit@hochschule-2026
 ```
 
 ## Quellen
 
-Jedes Skriptkapitel hat ein eigenes Quellenverzeichnis im IEEE-Stil; Webquellen tragen das Abrufdatum. Der Unteragent `quellen-pruefer` prüft eigene Texte nach demselben Maßstab.
+Jedes Skriptkapitel hat ein eigenes Quellenverzeichnis im IEEE-Stil; Webquellen tragen das Abrufdatum.
+Der Unteragent `quellen-pruefer` prüft eigene Texte nach demselben Maßstab.
 
 ## Datenschutz
 
-Bitte lesen Sie vor der ersten Nutzung Kapitel 1. Kurzfassung: Modelltraining ausschalten, keine personenbezogenen Daten Dritter und keine urheberrechtlich geschützten Fremdtexte eingeben, bei internen Hochschulinformationen THKI nutzen. Die Hinweise sind keine Rechtsberatung; maßgeblich sind die Handreichungen der TH Köln.
+Bitte lesen Sie vor der ersten Nutzung Kapitel 1. Kurzfassung: Modelltraining ausschalten, keine
+personenbezogenen Daten Dritter und keine urheberrechtlich geschützten Fremdtexte eingeben, bei
+internen Hochschulinformationen THKI nutzen. Die Hinweise sind keine Rechtsberatung; maßgeblich sind
+die Handreichungen der TH Köln.
 
 ## Wenn etwas hakt
 
-Fragen gern als Issue in diesem Repository, dann haben alle etwas davon. Vor dem zweiten Termin gibt es eine halbe Stunde Sprechstunde.
+Fragen gern als Issue in diesem Repository, dann haben alle etwas davon.
 
 ## Stand und Lizenz
 
-Stand: 15. September 2026. Produkte in diesem Feld ändern sich schnell; prüfen Sie im Zweifel die verlinkten Originalquellen, sie sind überall verlinkt.
+Stand: 18. September 2026. Produkte in diesem Feld ändern sich schnell; prüfen Sie im Zweifel die
+verlinkten Originalquellen.
 
-Texte, Skript und Aufgaben stehen unter **CC BY 4.0**, der Code unter **MIT**. Nutzen Sie beides für Ihre eigene Lehre, gern mit Nennung der Quelle.
-
-Nicht enthalten sind die Foliensätze und die Dozentenunterlagen; die liegen in einem getrennten, privaten Repository.
+Texte, Skript, Folien und Aufgaben stehen unter **CC BY 4.0**, der Code unter **MIT**. Nutzen Sie beides
+für Ihre eigene Lehre, gern mit Nennung der Quelle.

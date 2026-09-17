@@ -1,0 +1,526 @@
+{
+  "uid": "umfragen-auswertung",
+  "title": "Umfrage-Auswertung",
+  "description": "Eine einzelne Frage genau ansehen. Oben Umfrage und Frage wählen.",
+  "tags": [
+    "lehre",
+    "umfrage"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "schemaVersion": 39,
+  "style": "light",
+  "refresh": "10s",
+  "time": {
+    "from": "now-12h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "umfrage",
+        "label": "Umfrage",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "umfragen"
+        },
+        "refresh": 1,
+        "sort": 0,
+        "includeAll": false,
+        "multi": false,
+        "definition": "",
+        "query": "SELECT m.title AS \"__text\", m.table_name AS \"__value\"\nFROM public.nc_models_v2 m\nWHERE m.base_id = 'p6jz2gyuwlapqqe'\nAND m.table_name NOT IN ('umfragen') AND m.table_name NOT LIKE 'zugelassen%'\nAND coalesce(m.deleted,false) = false ORDER BY m.created_at DESC"
+      },
+      {
+        "name": "frage",
+        "label": "Frage",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "umfragen"
+        },
+        "refresh": 1,
+        "sort": 0,
+        "includeAll": false,
+        "multi": false,
+        "definition": "",
+        "query": "SELECT c.title AS \"__text\", c.column_name AS \"__value\"\nFROM public.nc_columns_v2 c\nJOIN public.nc_models_v2 m ON m.id = c.fk_model_id\nWHERE m.base_id = 'p6jz2gyuwlapqqe' AND m.table_name = '${umfrage}' AND coalesce(c.system,false) = false\nAND c.uidt IN ('SingleSelect','MultiSelect','Rating','Checkbox','Number','LongText','SingleLineText') ORDER BY c.\"order\""
+      },
+      {
+        "name": "kennung",
+        "label": "Kennung",
+        "type": "query",
+        "hide": 2,
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "umfragen"
+        },
+        "definition": "kennung zur gewählten Umfrage",
+        "query": "SELECT u.kennung AS \"__text\", u.kennung AS \"__value\" FROM \"p6jz2gyuwlapqqe\".\"umfragen\" u JOIN public.nc_models_v2 m ON m.id = u.antwort_tabelle WHERE m.table_name = '${umfrage}' AND u.\"__nc_deleted\" IS NOT TRUE LIMIT 1",
+        "refresh": 2,
+        "regex": "",
+        "sort": 0,
+        "includeAll": false,
+        "multi": false,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Antworten",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "description": "Geloeschte Zeilen sind herausgerechnet.",
+      "transparent": true,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"Antworten\" FROM \"p6jz2gyuwlapqqe\".\"${umfrage}\" WHERE \"__nc_deleted\" IS NOT TRUE",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C81E0F"
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 2,
+      "title": "Beteiligung",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "description": "Wie viele der Zugelassenen geantwortet haben.",
+      "transparent": true,
+      "gridPos": {
+        "x": 5,
+        "y": 0,
+        "w": 5,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE WHEN count(*)=0 THEN NULL\n       ELSE round(100.0*count(*) FILTER (WHERE abgestimmt)/count(*),0) END AS \"Beteiligung\"\nFROM \"p6jz2gyuwlapqqe\".\"zugelassen_${umfrage}\" WHERE \"__nc_deleted\" IS NOT TRUE",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#B04A3A",
+                "value": null
+              },
+              {
+                "color": "#EA5A00",
+                "value": 40
+              },
+              {
+                "color": "#2D7A4F",
+                "value": 70
+              }
+            ]
+          },
+          "noValue": "offen fuer alle"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 3,
+      "title": "Zuletzt eingegangen",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "description": "Woran man sieht, ob noch etwas hereinkommt.",
+      "transparent": true,
+      "gridPos": {
+        "x": 10,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT extract(epoch from max(created_at))*1000 AS \"zuletzt\" FROM \"p6jz2gyuwlapqqe\".\"${umfrage}\" WHERE \"__nc_deleted\" IS NOT TRUE",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeAsLocal",
+          "noValue": "noch nichts",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 4,
+      "title": "Eingang je Minute",
+      "type": "timeseries",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "description": "Im Hoersaal sieht man hier die Welle nach dem Scannen.",
+      "transparent": true,
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT date_trunc('minute',created_at) AS \"time\", count(*) AS \"Antworten\"\nFROM \"p6jz2gyuwlapqqe\".\"${umfrage}\" WHERE \"__nc_deleted\" IS NOT TRUE AND $__timeFilter(created_at) GROUP BY 1 ORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#EA5A00"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "barAlignment": 0,
+            "axisGridShow": false,
+            "axisBorderShow": false,
+            "barWidthFactor": 0.8,
+            "gradientMode": "none",
+            "pointSize": 0,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "$frage",
+      "type": "barchart",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "description": "Verteilung der gewaehlten Frage.",
+      "transparent": true,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 13,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CASE\n         WHEN \"${frage}\"::text = 'true'  THEN 'Ja'\n         WHEN \"${frage}\"::text = 'false' THEN 'Nein'\n         WHEN \"${frage}\" IS NULL OR \"${frage}\"::text = '' THEN 'ohne Angabe'\n         ELSE \"${frage}\"::text END AS \"Antwort\",\n       count(*) AS \"Anzahl\"\nFROM \"p6jz2gyuwlapqqe\".\"${umfrage}\" WHERE \"__nc_deleted\" IS NOT TRUE\nGROUP BY 1\nORDER BY\n  -- Zahlen (Bewertungen) nach ihrem Wert, alles andere nach Haeufigkeit\n  CASE WHEN max(\"${frage}\"::text) ~ '^[0-9]+$' THEN lpad(max(\"${frage}\"::text), 6, '0') END DESC NULLS LAST,\n  count(*) DESC\nLIMIT 25",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#C81E0F"
+          },
+          "unit": "short",
+          "custom": {
+            "axisGridShow": false,
+            "axisBorderShow": false,
+            "axisLabel": "",
+            "lineWidth": 0,
+            "fillOpacity": 88,
+            "gradientMode": "none",
+            "axisPlacement": "auto",
+            "hideFrom": {
+              "legend": true,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.6,
+        "groupWidth": 0.75,
+        "barRadius": 0.15,
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "fullHighlight": false
+      }
+    },
+    {
+      "id": 6,
+      "title": "Antworten im Klartext",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "description": "Dieselbe Frage Zeile fuer Zeile.",
+      "transparent": false,
+      "gridPos": {
+        "x": 13,
+        "y": 4,
+        "w": 11,
+        "h": 9
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT created_at AS \"Eingang\", \"${frage}\" AS \"Antwort\"\nFROM \"p6jz2gyuwlapqqe\".\"${umfrage}\" WHERE \"__nc_deleted\" IS NOT TRUE AND \"${frage}\"::text <> '' AND \"${frage}\" IS NOT NULL\nORDER BY created_at DESC LIMIT 300",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "minWidth": 150,
+            "filterable": false,
+            "inspect": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "lg",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "fields": ""
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "text",
+      "title": "Zusammenfassen",
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 5,
+        "h": 6
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Der Knopf ist die Entscheidung.**\n\nErst wenn Sie klicken, liest die KI die Antworten, fasst zusammen und Code prüft, dass jede Antwort mit Nummer belegt ist.\n\n### [▶ Zusammenfassung erstellen](https://n8n.vibe-cortex.com/webhook/umfrage-zusammenfassen?kennung=${kennung})\n\nÖffnet eine Seite, dauert etwa eine halbe Minute. Das Ergebnis erscheint danach rechts."
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Zusammenfassung (KI, geprüft)",
+      "gridPos": {
+        "x": 5,
+        "y": 13,
+        "w": 19,
+        "h": 6
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "umfragen"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "umfragen"
+          },
+          "rawSql": "SELECT created_at AS \"Erstellt\", anzahl AS \"Antworten\", versuch AS \"Versuch\", CASE WHEN vollstaendig THEN 'ja' ELSE 'nein, bitte prüfen' END AS \"Jede Antwort belegt\", regexp_replace(text, '<[^>]+>', ' ', 'g') AS \"Zusammenfassung\" FROM \"p6jz2gyuwlapqqe\".\"zusammenfassungen\" WHERE kennung = '${kennung}' AND \"__nc_deleted\" IS NOT TRUE ORDER BY created_at DESC LIMIT 3"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Zusammenfassung"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 900
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Erstellt"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "md"
+      }
+    }
+  ]
+}
