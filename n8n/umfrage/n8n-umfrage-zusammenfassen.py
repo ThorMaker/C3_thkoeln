@@ -85,6 +85,8 @@ nodes = [
 
 **Nur zwei Code-Bausteine**, und beide sind unvermeidbar: „Prompt bauen“ (nummerierte Zeilen aus beliebigen Spalten) und „Prüfen“ (der Sinn des Ablaufs). Alles andere sind Klickbausteine. Einstellungen nur in „Konfiguration“.
 
+Allgemein für jede Umfrage: Zahlen (Auswahl, Sterne, Ja/Nein) zählt Code, die KI fasst nur Freitexte zusammen.
+
 Quelle: `n8n-umfrage-zusammenfassen.py` (Generator). AI-assisted: Claude, human-reviewed ausstehend, 17.09.2026""", 4),
     sticky("Notiz Prüfschleife", [1400, -420], 620, 220, """## Warum die Schleife
 
@@ -121,38 +123,65 @@ Modell und Grenzen stehen in „Konfiguration“, nicht im Code.""", 5),
         {"id": uid("u2"), "name": "kennung", "value": "={{ $json.list[0].kennung }}", "type": "string"},
         {"id": uid("u3"), "name": "antwort_tabelle", "value": "={{ $json.list[0].antwort_tabelle }}", "type": "string"},
     ]}, "options": {}}),
-    nocodb_get("NocoDB: Antworten lesen", [1000, 0],
-               "={{ $('Konfiguration').first().json.nocodb_url }}/api/v2/tables/{{ $json.antwort_tabelle }}/records?limit=1000"),
-    code("Prompt bauen", [1240, 0], r"""
+    nocodb_get("NocoDB: Spalten lesen", [1000, 0],
+               "={{ $('Konfiguration').first().json.nocodb_url }}/api/v2/meta/tables/{{ $json.antwort_tabelle }}"),
+    nocodb_get("NocoDB: Antworten lesen", [1240, 0],
+               "={{ $('Konfiguration').first().json.nocodb_url }}/api/v2/tables/{{ $('Umfrage wählen').first().json.antwort_tabelle }}/records?limit=1000"),
+    code("Prompt bauen", [1480, 0], r"""
 const cfg = $('Konfiguration').first().json;
 const umfrage = $('Umfrage wählen').first().json;
+const spalten = ($('NocoDB: Spalten lesen').first().json.columns || []).filter(c => !c.system && !""" + SYSTEM + r""".includes(c.title));
 const rows = ($('NocoDB: Antworten lesen').first().json.list || []).filter(r => !r.__nc_deleted);
-const SYSTEM = """ + SYSTEM + r""";
-const fragen = rows.length ? Object.keys(rows[0]).filter(k => !SYSTEM.includes(k)) : [];
+const ZAEHLBAR = ['SingleSelect', 'MultiSelect', 'Checkbox', 'Rating', 'Number'];
+const FREITEXT = ['LongText', 'SingleLineText', 'Text'];
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+// Zahlen rechnet Code, nicht die KI: Verteilung je Auswahl, Durchschnitt und Streuung je Sternefrage.
+let zahlen = '';
+for (const c of spalten.filter(c => ZAEHLBAR.includes(c.uidt))) {
+  const werte = rows.map(r => r[c.title]).filter(v => v !== null && v !== undefined && v !== '');
+  if (!werte.length) { zahlen += `<p><b>${esc(c.title)}</b>: keine Angaben</p>`; continue; }
+  if (c.uidt === 'Rating' || c.uidt === 'Number') {
+    const z = werte.map(Number).filter(n => !isNaN(n));
+    const mittel = z.reduce((a, b) => a + b, 0) / z.length;
+    const streu = Math.sqrt(z.reduce((a, b) => a + (b - mittel) ** 2, 0) / z.length);
+    zahlen += `<p><b>${esc(c.title)}</b>: Durchschnitt ${mittel.toFixed(1)} bei ${z.length} Angaben, Streuung ${streu.toFixed(1)} (0 heißt: alle gleich)</p>`;
+  } else {
+    const zaehler = {};
+    for (const v of werte) for (const teil of String(v).split(',')) { const k = teil.trim(); if (k) zaehler[k] = (zaehler[k] || 0) + 1; }
+    const liste = Object.entries(zaehler).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(k)}: ${n}`).join(', ');
+    zahlen += `<p><b>${esc(c.title)}</b>: ${liste}</p>`;
+  }
+}
+const zahlen_html = `<h3>Zahlen, von Code gezählt</h3>${zahlen || '<p>keine zählbaren Fragen</p>'}`;
+
+const textfragen = spalten.filter(c => FREITEXT.includes(c.uidt)).map(c => c.title);
+const zeilen = rows.map(r => {
+  const frei = textfragen.map(f => `${f}: ${String(r[f] ?? '').replace(/\s+/g, ' ').trim() || '(leer)'}`).join(' | ');
+  const wahl = spalten.filter(c => ZAEHLBAR.includes(c.uidt)).map(c => `${c.title}: ${r[c.title] ?? '(leer)'}`).join(' | ');
+  return `[R-${r.Id}] ${frei}${frei && wahl ? ' | ' : ''}${wahl}`;
+});
 const versuch = $runIndex + 1;              // jeder Durchlauf der Schleife erhöht den Zähler
 const vorher = versuch > 1 ? $json : null;  // beim Wiederholen: Ergebnis der Prüfung
-const zeilen = rows.map(r => `[R-${r.Id}] ` + fragen.map(f => `${f}: ${String(r[f] ?? '').replace(/\s+/g, ' ').trim() || '(leer)'}`).join(' | '));
-const system = `Du wertest die anonyme Rückmeldung zu einem Weiterbildungstermin aus. Ziel ist eine Tagesordnung für das nächste Mal, keine Lobhudelei.
+const system = `Du wertest eine anonyme Rückmeldung zu einer Lehrveranstaltung oder einem Termin aus. Die Zahlen sind schon ausgezählt und stehen nicht bei dir; deine Aufgabe sind die Freitexte und eine Empfehlung.
 Pflicht: Jede Antwort wird mindestens einmal mit ihrer Nummer in eckigen Klammern belegt, z.B. [R-12]. Erfinde keine Nummern.
 Aufbau als HTML ohne <html>-Rahmen:
-<h3>Wer im Raum war</h3> Verteilung nach Bereich und Vorkenntnissen in zwei Sätzen.
-<h3>Was sich wiederholt</h3> Die genannten Aufgaben zu Gruppen zusammengefasst, größte Gruppe zuerst, jede mit Nummern belegt.
-<h3>Gewünschte Themen und Hürden</h3> Nach Häufigkeit, mit Anzahl.
-<h3>Wie es weitergehen soll</h3> Verteilung der Antworten und daraus eine Empfehlung in einem Satz.
-<h3>Alle Antworten, je eine Zeile</h3> Eine Liste mit jeder Nummer genau einmal: [R-n] und die Freitextangaben dieser Antwort in höchstens zwölf Wörtern. Keine weglassen, das ist der Beleg. Diese Liste zählt nicht zur Wortgrenze.
-Sachlich, höchstens ${cfg.max_worte} Wörter, keine Wertungen über Personen, keine Namen. Wenn eine Angabe fehlt, sag das, statt sie zu ergänzen.
+<h3>Was in den Freitexten steht</h3> Die Aussagen zu Themen gebündelt, größtes Thema zuerst, je Thema die Anzahl und die Nummern. Keine Liste von Zitaten. Gibt es keine Freitexte, sag das in einem Satz.
+<h3>Was daraus folgt</h3> Zwei bis vier Sätze Empfehlung für das nächste Mal, sachlich, aus Zahlen und Freitexten zusammen.
+<h3>Alle Antworten, je eine Zeile</h3> Eine Liste mit jeder Nummer genau einmal: [R-n] und die Angaben dieser Antwort in höchstens zwölf Wörtern. Keine weglassen, das ist der Beleg. Diese Liste zählt nicht zur Wortgrenze.
+Sachlich, höchstens ${cfg.max_worte} Wörter, keine Wertungen über Personen, keine Namen; taucht ein Name in einem Freitext auf, lass ihn weg. Wenn eine Angabe fehlt, sag das, statt sie zu ergänzen.
 Bei weniger als fünf Antworten beginnst du mit dem Satz: „Bei ${rows.length} Antworten lässt sich daraus nichts ableiten.“ und bleibst danach kurz.`;
-let user = `Umfrage: ${umfrage.titel}\nFragen: ${fragen.join(' | ')}\n\nAntworten, eine je Zeile, ${rows.length} Stück:\n${zeilen.join('\n') || '(keine)'}`;
+let user = `Umfrage: ${umfrage.titel}\nFragen: ${spalten.map(c => `${c.title} (${c.uidt})`).join(' | ')}\n\nAntworten, eine je Zeile, ${rows.length} Stück:\n${zeilen.join('\n') || '(keine)'}`;
 if (vorher) user += `\n\nKorrektur, Versuch ${versuch}: Im letzten Entwurf fehlten diese Nummern: ${vorher.fehlend.join(', ') || 'keine'}. Erfunden waren: ${vorher.erfunden.join(', ') || 'keine'}. Schreibe die Zusammenfassung vollständig neu.`;
-return [{ json: { versuch, anzahl: rows.length, system, user } }];
+return [{ json: { versuch, anzahl: rows.length, system, user, zahlen_html } }];
 """),
-    node("KI: Zusammenfassen", "@n8n/n8n-nodes-langchain.openAi", 2.3, [1480, 0], {
+    node("KI: Zusammenfassen", "@n8n/n8n-nodes-langchain.openAi", 2.3, [1720, 0], {
         "resource": "text", "operation": "response",
         "modelId": {"__rl": True, "mode": "id", "value": "={{ $('Konfiguration').first().json.llm_model }}"},
         "responses": {"values": [{"type": "text", "role": "system", "content": "={{ $json.system }}"},
                                  {"type": "text", "role": "user", "content": "={{ $json.user }}"}]},
         "simplify": True, "options": {"maxTokens": 2500, "temperature": 0.2, "store": False}}, credentials=OPENAI),
-    code("Prüfen: Nummern vollständig?", [1720, 0], KI_TEXT + r"""
+    code("Prüfen: Nummern vollständig?", [1960, 0], KI_TEXT + r"""
 const cfg = $('Konfiguration').first().json;
 const umfrage = $('Umfrage wählen').first().json;
 const rows = ($('NocoDB: Antworten lesen').first().json.list || []).filter(r => !r.__nc_deleted);
@@ -163,23 +192,24 @@ const fehlend = erwartet.filter(id => !gefunden.includes(id));
 const erfunden = gefunden.filter(id => !erwartet.includes(id));
 const versuch = $runIndex + 1;
 const vollstaendig = fehlend.length === 0 && erfunden.length === 0;
+const zahlen_html = $('Prompt bauen').first().json.zahlen_html || '';
 return [{ json: { vollstaendig, fehlend, erfunden, versuch, max_versuche: cfg.max_versuche,
-  kennung: umfrage.kennung, titel: umfrage.titel, anzahl: erwartet.length, text } }];
+  kennung: umfrage.kennung, titel: umfrage.titel, anzahl: erwartet.length, text: zahlen_html + '\n' + text } }];
 """),
-    node("Vollständig?", "n8n-nodes-base.if", 2.2, [1960, 0], cond_bool("={{ $json.vollstaendig }}", "if-voll")),
-    node("Noch ein Versuch?", "n8n-nodes-base.if", 2.2, [2200, 160], {
+    node("Vollständig?", "n8n-nodes-base.if", 2.2, [2200, 0], cond_bool("={{ $json.vollstaendig }}", "if-voll")),
+    node("Noch ein Versuch?", "n8n-nodes-base.if", 2.2, [2440, 160], {
         "conditions": {"options": {"caseSensitive": True, "leftValue": "", "typeValidation": "strict", "version": 2},
                        "conditions": [{"id": uid("if-versuch"), "leftValue": "={{ $json.versuch }}",
                                        "rightValue": "={{ $json.max_versuche }}", "operator": {"type": "number", "operation": "lt"}}],
                        "combinator": "and"}, "options": {}}),
-    node("NocoDB: Zusammenfassung speichern", "n8n-nodes-base.httpRequest", 4.2, [2440, 0], {
+    node("NocoDB: Zusammenfassung speichern", "n8n-nodes-base.httpRequest", 4.2, [2680, 0], {
         "method": "POST",
         "url": "={{ $('Konfiguration').first().json.nocodb_url }}/api/v2/tables/{{ $('Konfiguration').first().json.ziel_id }}/records",
         "authentication": "predefinedCredentialType", "nodeCredentialType": "nocoDbApiToken",
         "sendBody": True, "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ kennung: $json.kennung, titel: $json.titel, text: $json.text, anzahl: $json.anzahl, versuch: $json.versuch, vollstaendig: $json.vollstaendig, fehlende: ($json.fehlend || []).join(', ') }) }}",
         "options": {}}, credentials=NOCODB),
-    node("Seite anzeigen", "n8n-nodes-base.respondToWebhook", 1.1, [2680, 0], {
+    node("Seite anzeigen", "n8n-nodes-base.respondToWebhook", 1.1, [2920, 0], {
         "respondWith": "text",
         "responseBody": "={{ (() => { const p = $('Prüfen: Nummern vollständig?').first().json; const hinweis = p.vollstaendig ? '' : `<p style=\"background:#fde7e4;padding:10px\">Nach ${p.versuch} Versuchen unvollständig, fehlende Nummern: ${(p.fehlend||[]).join(', ') || 'keine'}, erfunden: ${(p.erfunden||[]).join(', ') || 'keine'}. Bitte selbst prüfen.</p>`; return `<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><title>Zusammenfassung: ${p.titel}</title><style>body{font-family:'Source Sans 3',Helvetica,Arial,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;color:#333;line-height:1.5}h1{color:#C81E0F}h3{color:#EA5A00;margin-top:1.4em}small{color:#767676}</style></head><body><h1>${p.titel}</h1><small>${p.anzahl} Antworten, Versuch ${p.versuch}, jede Antwort mit Nummer belegt: ${p.vollstaendig ? 'ja' : 'nein'}. Gespeichert in NocoDB, sichtbar in Grafana.</small>${hinweis}${p.text}</body></html>`; })() }}",
         "options": {"responseHeaders": {"entries": [{"name": "Content-Type", "value": "text/html; charset=utf-8"}]}}}),
@@ -195,7 +225,8 @@ connections = {
     "Konfiguration": c(["NocoDB: Umfrage finden"]),
     "NocoDB: Umfrage finden": c(["Umfrage gefunden?"]),
     "Umfrage gefunden?": c(["Umfrage wählen"], ["Seite: Kennung unbekannt"]),
-    "Umfrage wählen": c(["NocoDB: Antworten lesen"]),
+    "Umfrage wählen": c(["NocoDB: Spalten lesen"]),
+    "NocoDB: Spalten lesen": c(["NocoDB: Antworten lesen"]),
     "NocoDB: Antworten lesen": c(["Prompt bauen"]),
     "Prompt bauen": c(["KI: Zusammenfassen"]),
     "KI: Zusammenfassen": c(["Prüfen: Nummern vollständig?"]),

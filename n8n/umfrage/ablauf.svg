@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" font-family="Source Sans 3, Source Sans Pro, Helvetica, Arial, sans-serif">
+  <!-- AI-assisted: Claude (Fable 5.1), human-reviewed: ausstehend, Stand 17.09.2026 -->
+  <defs>
+    <marker id="pf" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>
+    <marker id="pfo" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#EA5A00"/></marker>
+    <style>
+      .lane { fill: #F7F7F7; stroke: #E4E4E4; }
+      .lanet { font-size: 13px; font-weight: 700; fill: #595959; letter-spacing: 1.5px; }
+      .box { fill: #FFFFFF; stroke: #A6A6A6; stroke-width: 1.2; }
+      .code { fill: #000000; stroke: #000000; }
+      .ki { fill: #EA5A00; stroke: #EA5A00; }
+      .db { fill: #FFFFFF; stroke: #B43092; stroke-width: 1.6; }
+      .t { font-size: 14px; fill: #111; }
+      .tw { font-size: 14px; fill: #fff; font-weight: 700; }
+      .s { font-size: 12px; fill: #595959; }
+      .ln { stroke: #333; stroke-width: 1.4; fill: none; marker-end: url(#pf); }
+      .lno { stroke: #EA5A00; stroke-width: 1.6; fill: none; marker-end: url(#pfo); stroke-dasharray: 5 4; }
+      .h { font-size: 24px; font-weight: 700; fill: #000; }
+    </style>
+  </defs>
+  <rect width="1440" height="820" fill="#fff"/>
+  <rect x="0" y="0" width="480" height="6" fill="#C81E0F"/><rect x="480" y="0" width="480" height="6" fill="#EA5A00"/><rect x="960" y="0" width="480" height="6" fill="#B43092"/>
+  <text x="40" y="44" class="h">Umfragen auf dem eigenen Server: anlegen, antworten, Live-Bild, Zusammenfassung auf Knopfdruck</text>
+  <text x="40" y="66" class="s">Weiß: Klickbausteine und Oberflächen · Schwarz: hier entscheidet Code · Orange: hier arbeitet die KI · Violett: Tabellen in NocoDB · gestrichelt: nur auf Knopfdruck</text>
+
+  <!-- Bahnen -->
+  <rect x="40" y="90" width="1360" height="120" class="lane"/><text x="52" y="110" class="lanet">LEHRENDE</text>
+  <rect x="40" y="220" width="1360" height="150" class="lane"/><text x="52" y="240" class="lanet">n8n: UMFRAGE ANLEGEN (einmal je Umfrage)</text>
+  <rect x="40" y="380" width="1360" height="130" class="lane"/><text x="52" y="400" class="lanet">EIGENER SERVER: TÜRSTEHER, NOCODB, GRAFANA</text>
+  <rect x="40" y="520" width="1360" height="90" class="lane"/><text x="52" y="540" class="lanet">STUDIERENDE</text>
+  <rect x="40" y="620" width="1360" height="170" class="lane"/><text x="52" y="640" class="lanet">n8n: UMFRAGE ZUSAMMENFASSEN (nur auf Knopfdruck)</text>
+
+  <!-- Lehrende -->
+  <rect x="70" y="128" width="200" height="60" rx="3" class="box"/>
+  <text x="170" y="153" class="t" text-anchor="middle">Formular „Neue Umfrage“</text><text x="170" y="172" class="s" text-anchor="middle">Titel, Fragen, wer darf antworten</text>
+  <rect x="560" y="128" width="200" height="60" rx="3" class="box"/>
+  <text x="660" y="153" class="t" text-anchor="middle">QR-Code auf die Folie</text><text x="660" y="172" class="s" text-anchor="middle">aus der Tabelle „Umfragen“</text>
+  <rect x="900" y="128" width="200" height="60" rx="3" class="box"/>
+  <text x="1000" y="153" class="t" text-anchor="middle">Live-Bild ansehen</text><text x="1000" y="172" class="s" text-anchor="middle">Grafana, alle 10 s neu</text>
+  <rect x="1180" y="128" width="200" height="60" rx="3" class="code"/>
+  <text x="1280" y="153" class="tw" text-anchor="middle">Knopf: Zusammenfassen</text><text x="1280" y="172" class="s" text-anchor="middle" fill="#fff">der Mensch entscheidet</text>
+
+  <!-- n8n anlegen -->
+  <rect x="70" y="262" width="170" height="56" rx="3" class="code"/><text x="155" y="286" class="tw" text-anchor="middle">Eingaben verstehen</text><text x="155" y="304" class="s" text-anchor="middle" fill="#fff">Fragen → Spalten</text>
+  <rect x="270" y="262" width="170" height="56" rx="3" class="box"/><text x="355" y="286" class="t" text-anchor="middle">Tabelle anlegen</text><text x="355" y="304" class="s" text-anchor="middle">eine Spalte je Frage</text>
+  <rect x="470" y="262" width="170" height="56" rx="3" class="box"/><text x="555" y="286" class="t" text-anchor="middle">Zulassungsliste</text><text x="555" y="304" class="s" text-anchor="middle">Matrikelnummern, optional</text>
+  <rect x="670" y="262" width="170" height="56" rx="3" class="box"/><text x="755" y="286" class="t" text-anchor="middle">Steuerzeile</text><text x="755" y="304" class="s" text-anchor="middle">Kennung, Schutz, offen</text>
+  <rect x="870" y="262" width="170" height="56" rx="3" class="box"/><text x="955" y="286" class="t" text-anchor="middle">QR-Code holen</text><text x="955" y="304" class="s" text-anchor="middle">QR-Dienst, nur intern</text>
+  <rect x="1070" y="262" width="170" height="56" rx="3" class="box"/><text x="1155" y="286" class="t" text-anchor="middle">QR an die Zeile</text><text x="1155" y="304" class="s" text-anchor="middle">Anhang in „Umfragen“</text>
+  <rect x="1270" y="262" width="110" height="56" rx="3" class="box"/><text x="1325" y="286" class="t" text-anchor="middle">Ergebnisseite</text><text x="1325" y="304" class="s" text-anchor="middle">Link, Hinweise</text>
+  <line x1="240" y1="290" x2="268" y2="290" class="ln"/><line x1="440" y1="290" x2="468" y2="290" class="ln"/><line x1="640" y1="290" x2="668" y2="290" class="ln"/><line x1="840" y1="290" x2="868" y2="290" class="ln"/><line x1="1040" y1="290" x2="1068" y2="290" class="ln"/><line x1="1240" y1="290" x2="1268" y2="290" class="ln"/>
+  <line x1="170" y1="188" x2="155" y2="260" class="ln"/>
+  <path d="M1325,262 C1325,230 700,240 660,190" class="ln"/>
+
+  <!-- Server -->
+  <rect x="70" y="420" width="200" height="66" rx="3" class="code"/><text x="170" y="446" class="tw" text-anchor="middle">Türsteher</text><text x="170" y="464" class="s" text-anchor="middle" fill="#fff">zeigt Fragen, prüft Nummer,</text><text x="170" y="478" class="s" text-anchor="middle" fill="#fff">speichert ohne Kennung</text>
+  <ellipse cx="410" cy="453" rx="95" ry="30" class="db"/><text x="410" y="449" class="t" text-anchor="middle">Antworttabelle</text><text x="410" y="466" class="s" text-anchor="middle">eine je Umfrage</text>
+  <ellipse cx="590" cy="453" rx="80" ry="30" class="db"/><text x="590" y="449" class="t" text-anchor="middle">Zugelassen</text><text x="590" y="466" class="s" text-anchor="middle">Nummer abgehakt</text>
+  <ellipse cx="770" cy="453" rx="85" ry="30" class="db"/><text x="770" y="449" class="t" text-anchor="middle">Umfragen</text><text x="770" y="466" class="s" text-anchor="middle">Steuertabelle, QR</text>
+  <ellipse cx="960" cy="453" rx="95" ry="30" class="db"/><text x="960" y="449" class="t" text-anchor="middle">zusammenfassungen</text><text x="960" y="466" class="s" text-anchor="middle">Text, geprüft ja/nein</text>
+  <rect x="1110" y="420" width="270" height="66" rx="3" class="box"/><text x="1245" y="446" class="t" text-anchor="middle">Grafana „Umfrage-Auswertung“</text><text x="1245" y="464" class="s" text-anchor="middle">liest Postgres nur lesend: Verteilung je Frage,</text><text x="1245" y="478" class="s" text-anchor="middle">Eingänge, Knopf, Zusammenfassung</text>
+  <line x1="355" y1="318" x2="400" y2="421" class="ln"/><line x1="555" y1="318" x2="580" y2="421" class="ln"/><line x1="755" y1="318" x2="765" y2="421" class="ln"/><line x1="1155" y1="318" x2="790" y2="424" class="ln"/>
+  <line x1="270" y1="446" x2="313" y2="450" class="ln"/><path d="M170,420 C170,395 560,395 560,423" class="ln"/>
+  <line x1="505" y1="453" x2="1108" y2="453" class="ln" stroke-dasharray="2 3"/>
+  <line x1="1000" y1="188" x2="1200" y2="418" class="ln"/>
+
+  <!-- Studierende -->
+  <rect x="70" y="552" width="200" height="48" rx="3" class="box"/><text x="170" y="572" class="t" text-anchor="middle">QR-Code scannen</text><text x="170" y="590" class="s" text-anchor="middle">Handy, kein Konto, kein Name</text>
+  <rect x="300" y="552" width="200" height="48" rx="3" class="box"/><text x="400" y="572" class="t" text-anchor="middle">antworten, absenden</text><text x="400" y="590" class="s" text-anchor="middle">geht nicht durch n8n, hält hunderte</text>
+  <line x1="270" y1="576" x2="298" y2="576" class="ln"/><line x1="300" y1="560" x2="200" y2="488" class="ln"/>
+  <path d="M560,158 L52,158 L52,576 L68,576" class="ln" stroke-dasharray="6 4"/>
+
+  <!-- n8n zusammenfassen -->
+  <rect x="70" y="662" width="150" height="56" rx="3" class="box"/><text x="145" y="686" class="t" text-anchor="middle">Umfrage finden</text><text x="145" y="704" class="s" text-anchor="middle">Kennung → Tabelle</text>
+  <rect x="250" y="662" width="150" height="56" rx="3" class="box"/><text x="325" y="686" class="t" text-anchor="middle">Spalten und</text><text x="325" y="704" class="s" text-anchor="middle">Antworten lesen</text>
+  <rect x="430" y="662" width="170" height="56" rx="3" class="code"/><text x="515" y="686" class="tw" text-anchor="middle">Code zählt</text><text x="515" y="704" class="s" text-anchor="middle" fill="#fff">Verteilung, Schnitt, Streuung</text>
+  <rect x="630" y="662" width="170" height="56" rx="3" class="ki"/><text x="715" y="686" class="tw" text-anchor="middle">KI fasst Freitexte</text><text x="715" y="704" class="s" text-anchor="middle" fill="#fff">Themen, Empfehlung, Belege</text>
+  <rect x="830" y="662" width="170" height="56" rx="3" class="code"/><text x="915" y="686" class="tw" text-anchor="middle">Code prüft</text><text x="915" y="704" class="s" text-anchor="middle" fill="#fff">jede Nummer belegt?</text>
+  <rect x="1030" y="662" width="160" height="56" rx="3" class="box"/><text x="1110" y="686" class="t" text-anchor="middle">speichern</text><text x="1110" y="704" class="s" text-anchor="middle">Zahlen + Text + Status</text>
+  <rect x="1220" y="662" width="160" height="56" rx="3" class="box"/><text x="1300" y="686" class="t" text-anchor="middle">Ergebnisseite</text><text x="1300" y="704" class="s" text-anchor="middle">im Browser, 5 bis 30 s</text>
+  <line x1="220" y1="690" x2="248" y2="690" class="ln"/><line x1="400" y1="690" x2="428" y2="690" class="ln"/><line x1="600" y1="690" x2="628" y2="690" class="ln"/><line x1="800" y1="690" x2="828" y2="690" class="ln"/><line x1="1000" y1="690" x2="1028" y2="690" class="ln"/><line x1="1190" y1="690" x2="1218" y2="690" class="ln"/>
+  <path d="M915,718 C915,760 715,760 715,720" class="lno"/><text x="815" y="772" class="s" text-anchor="middle" fill="#EA5A00">fehlt eine Nummer: zurück, höchstens dreimal, dann „bitte prüfen“</text>
+  <path d="M1380,158 L1415,158 L1415,615 L145,615 L145,660" class="lno"/>
+  <line x1="770" y1="483" x2="160" y2="660" class="ln" stroke-dasharray="2 3"/><line x1="410" y1="483" x2="320" y2="660" class="ln" stroke-dasharray="2 3"/>
+  <line x1="1110" y1="662" x2="980" y2="486" class="ln"/><line x1="1300" y1="662" x2="1290" y2="190" class="ln" stroke-dasharray="2 3"/>
+  <text x="40" y="808" class="s">Nichts läuft von allein: Anlegen ist ein Klick der Lehrenden, Zusammenfassen ein zweiter. Kein Name wird erhoben; die KI sieht nur anonyme Freitexte. Quelle: C3_thkoeln/n8n/umfrage</text>
+</svg>
