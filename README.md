@@ -69,11 +69,15 @@ Die Aufgaben zwischen den Terminen stehen in `aufgaben/`, mit Hinweisen, aber be
 
 Jeder Workflow trägt seine Beschreibung als Notiz im Workflow selbst (User Story und Technik).
 
+**Was man damit bauen kann:** `vorhaben/README.md`, ein Katalog mit 26 Vorhaben für Arbeitsplatz, Lehre,
+Verwaltung, Forschung und Hackathons, je mit Datenampel, Bausteinen und dem, was dazu schon hier liegt.
+
 ## Inhalt im Überblick
 
 | Ordner | Inhalt |
 |---|---|
 | `folien/` | alle Foliensätze, PowerPoint und PDF, ohne Sprechtext |
+| `vorhaben/` | Katalog: 26 Vorhaben für die Hochschule mit Datenampel, Bausteinen und Stand |
 | `skript/` | das Skript als Markdown; Kapitelnummer = Block im Vortrag, jedes Kapitel mit Quellenverzeichnis |
 | `vorlagen/` | Konzepte (41, mit Quellen), Glossar, Kursempfehlungen, CLAUDE.md vorher und nachher, Datenschutz-Profil, Leitplanken, Skill-Vorlage, Starter-Prompts |
 | `aufgaben/` | die Aufgaben zwischen den Terminen |
