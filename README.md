@@ -80,6 +80,7 @@ Jeder Workflow trägt seine Beschreibung als Notiz im Workflow selbst (User Stor
 | `diy/` | Aufgabenkarten für die Übungen |
 | `demo-ordner/` | zweimal derselbe Ordner, einmal mit und einmal ohne `CLAUDE.md` |
 | `beispiele/literaturliste/` | kleines Python-Projekt mit zwei absichtlichen Fehlern |
+| `beispiel-skills/` | sieben Skills, die beim Bauen dieser Reihe im Einsatz waren, zum Kopieren und Lesen: Sparringspartner, Folienregeln, Umfrage anlegen und auswerten |
 | `.claude/skills/`, `.claude/agents/` | Projekt-Skills (`skript-tutor`, `mail-dekanat`, `handover`, `prozessinventur`) und der Unteragent `quellen-pruefer` |
 | `plugins/hochschul-toolkit/` | Beispiel-Plugin mit Skills für Gremienprotokolle und Lehrveranstaltungs-Feedback |
 | `.claude-plugin/marketplace.json` | macht dieses Repository zu einem Plugin-Marketplace |
